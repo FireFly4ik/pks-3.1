@@ -1,0 +1,7 @@
+target/
+.mvn/apache-maven-*/
+data/
+exports/
+.idea/
+*.iml
+.env
