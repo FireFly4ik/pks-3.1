@@ -13,8 +13,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.containers.PostgreSQLContainer;
 import ru.mirea.hospital.exception.*;
 import ru.mirea.hospital.model.*;
 import ru.mirea.hospital.repository.*;
@@ -22,8 +22,25 @@ import ru.mirea.hospital.service.*;
 import ru.mirea.hospital.ui.ConsoleUi;
 import ru.mirea.hospital.util.*;
 
-@EnabledIfEnvironmentVariable(named = "TEST_DB_URL", matches = ".+")
 class HospitalIntegrationTest {
+    private static final String TEST_DB_URL = System.getenv("TEST_DB_URL");
+    private static final String TEST_DB_USER = System.getenv("TEST_DB_USER");
+    private static final String TEST_DB_PASSWORD = System.getenv("TEST_DB_PASSWORD");
+    private static final boolean USE_EXTERNAL_DATABASE =
+            TEST_DB_URL != null
+                    && !TEST_DB_URL.isBlank()
+                    && TEST_DB_USER != null
+                    && !TEST_DB_USER.isBlank()
+                    && TEST_DB_PASSWORD != null
+                    && !TEST_DB_PASSWORD.isBlank();
+    private static final PostgreSQLContainer<?> POSTGRES =
+            USE_EXTERNAL_DATABASE
+                    ? null
+                    : new PostgreSQLContainer<>("postgres:18")
+                            .withDatabaseName("hospital_test")
+                            .withUsername("hospital")
+                            .withPassword("hospital-test-password");
+
     private DatabaseManager db;
     private UserService users;
     private AppointmentService appointments;
@@ -37,13 +54,31 @@ class HospitalIntegrationTest {
 
     @TempDir Path directory;
 
+    @BeforeAll
+    static void startDatabase() {
+        if (POSTGRES != null) {
+            POSTGRES.start();
+        }
+    }
+
+    @AfterAll
+    static void stopDatabase() {
+        if (POSTGRES != null) {
+            POSTGRES.stop();
+        }
+    }
+
     @BeforeEach
     void setup() throws Exception {
-        db =
-                new DatabaseManager(
-                        System.getenv("TEST_DB_URL"),
-                        System.getenv().getOrDefault("TEST_DB_USER", "hospital"),
-                        System.getenv().getOrDefault("TEST_DB_PASSWORD", ""));
+        String url = TEST_DB_URL;
+        String username = TEST_DB_USER;
+        String password = TEST_DB_PASSWORD;
+        if (POSTGRES != null) {
+            url = POSTGRES.getJdbcUrl();
+            username = POSTGRES.getUsername();
+            password = POSTGRES.getPassword();
+        }
+        db = new DatabaseManager(url, username, password);
         try (var c = db.connect();
                 var s = c.prepareStatement("SELECT current_database()");
                 var r = s.executeQuery()) {
