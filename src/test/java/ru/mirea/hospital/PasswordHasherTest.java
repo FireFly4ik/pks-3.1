@@ -1,11 +1,13 @@
 package ru.mirea.hospital;
 
-import org.junit.jupiter.api.Test;
-import ru.mirea.hospital.util.PasswordHasher;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+import ru.mirea.hospital.util.PasswordHasher;
+
 class PasswordHasherTest {
-    @Test void saltsDifferAndPasswordsAreVerified() {
+    @Test
+    void saltsDifferAndPasswordsAreVerified() {
         String first = PasswordHasher.hash("Пароль123!");
         String second = PasswordHasher.hash("Пароль123!");
         assertNotEquals(first, second);

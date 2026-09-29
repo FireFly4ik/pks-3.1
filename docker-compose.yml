@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Укажите DB_PASSWORD в .env}
       TZ: Europe/Moscow
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${DB_PORT:-55432}:5432"
     volumes:
       - hospital_data:/var/lib/postgresql
     healthcheck:

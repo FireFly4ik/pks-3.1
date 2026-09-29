@@ -14,9 +14,24 @@ public class User {
         this.role = role;
         this.active = active;
     }
-    public long getId() { return id; }
-    public String getLogin() { return login; }
-    public String getFullName() { return fullName; }
-    public Role getRole() { return role; }
-    public boolean isActive() { return active; }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
 }
