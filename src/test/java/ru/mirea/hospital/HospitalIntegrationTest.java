@@ -119,6 +119,48 @@ class HospitalIntegrationTest {
     }
 
     @Test
+    void registrationAcceptsUnderscoreLoginAndRussianNameAndIdentifiesInvalidField() {
+        User registered = users.register("gg_wp", "Иванов Иван Иванович", "Password123!");
+        assertEquals("gg_wp", registered.getLogin());
+        assertEquals("Иванов Иван Иванович", registered.getFullName());
+        assertEquals(registered.getId(), users.login("gg_wp", "Password123!").getId());
+        assertTrue(
+                assertThrows(
+                                BusinessException.class,
+                                () -> users.register("", "Иванов Иван Иванович", "Password123!"))
+                        .getMessage()
+                        .contains("«Логин» не заполнено"));
+        assertTrue(
+                assertThrows(
+                                BusinessException.class,
+                                () ->
+                                        users.register(
+                                                "Иванов Иван Иванович",
+                                                "Иванов Иван Иванович",
+                                                "Password123!"))
+                        .getMessage()
+                        .contains("Поле «Логин»: разрешены"));
+        assertTrue(
+                assertThrows(
+                                BusinessException.class,
+                                () -> users.register("gg_wp", "", "Password123!"))
+                        .getMessage()
+                        .contains("«ФИО» не заполнено"));
+        assertTrue(
+                assertThrows(
+                                BusinessException.class,
+                                () -> users.register("gg_wp", "Иванов Иван Иванович", "short"))
+                        .getMessage()
+                        .contains("«Пароль»"));
+        assertTrue(
+                assertThrows(
+                                BusinessException.class,
+                                () -> users.register("ab", "Иванов Иван Иванович", "Password123!"))
+                        .getMessage()
+                        .contains("от 3 до 40"));
+    }
+
+    @Test
     void patientCannotAccessOthersOrAdminFunctions() {
         long id = appointments.book(patient, 1, slot);
         assertTrue(appointments.list(other).isEmpty());

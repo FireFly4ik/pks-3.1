@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.mirea.hospital.fx.MainController" fx:id="root" styleClass="page">
+ <top><VBox spacing="12">
+  <HBox spacing="12" alignment="CENTER_LEFT"><Label text="КЛИНИКА" styleClass="eyebrow"/><Pane HBox.hgrow="ALWAYS"/><Label fx:id="identity"/><Button text="Выйти" onAction="#logout"/></HBox>
+  <Label text="Записи на приём" styleClass="title"/>
+  <Label text="Управляйте визитами, выбирайте специалистов и следите за историей."/>
+  <FlowPane hgap="8" vgap="8"><Button text="＋ Записаться" onAction="#add" styleClass="primary"/><Button fx:id="editButton" text="Перенести" onAction="#edit"/><Button fx:id="cancelButton" text="Отменить запись" onAction="#cancel"/><Button fx:id="deleteButton" text="Удалить" onAction="#delete" styleClass="danger"/><Button text="Обновить" onAction="#refresh"/><Button text="Экспорт" onAction="#export"/><Button fx:id="usersButton" text="Пользователи" onAction="#users"/></FlowPane>
+ </VBox></top>
+ <center><TabPane tabClosingPolicy="UNAVAILABLE">
+  <Tab text="Записи"><VBox spacing="12" styleClass="section">
+   <TextField fx:id="search" promptText="Поиск по врачу, специальности или пациенту"/>
+   <FlowPane hgap="10" vgap="8" alignment="CENTER_LEFT"><Label text="Статус"/><ComboBox fx:id="status" promptText="Все статусы" prefWidth="170"/><Label text="С"/><DatePicker fx:id="from" editable="false" prefWidth="150"/><Label text="По"/><DatePicker fx:id="to" editable="false" prefWidth="150"/><Button text="Сбросить" onAction="#reset"/></FlowPane>
+   <Label fx:id="filterError" styleClass="error"/><TableView fx:id="table" VBox.vgrow="ALWAYS"/><Label fx:id="count"/><Label fx:id="selectedDetails" wrapText="true"/>
+   <Label text="Перенос и отмена доступны для предстоящих записей. Удаление — для отменённых и завершённых." wrapText="true"/>
+  </VBox></Tab>
+  <Tab text="Специалисты"><VBox spacing="12" styleClass="section"><Label text="Врачи и направления" styleClass="heading"/><TableView fx:id="doctors" VBox.vgrow="ALWAYS"/></VBox></Tab>
+  <Tab text="Статистика"><ScrollPane fitToWidth="true"><VBox spacing="12" styleClass="section"><Label text="Статистика всех доступных записей" styleClass="heading"/><Label text="Фильтры таблицы не ограничивают показатели. Для актуализации нажмите «Обновить»." wrapText="true"/><VBox fx:id="statistics" spacing="10"/></VBox></ScrollPane></Tab>
+  <Tab text="Помощь"><VBox spacing="16" styleClass="section"><Label text="Как пользоваться" styleClass="heading"/><Label wrapText="true" text="Новая запись: выберите специальность, дату, свободное время и врача. Клиника работает по будням с 09:00 до 17:00. Запись доступна на 90 дней вперёд. Время московское."/><Label wrapText="true" text="Чтобы перенести, отменить или удалить запись, сначала выделите строку. При переносе пациент сохраняется. Начавшийся или завершённый приём переносить нельзя."/><Label wrapText="true" text="Для сортировки нажмите заголовок столбца. Повторное нажатие меняет направление. Поиск и фильтры применяются совместно. Экспортируетcя именно отображаемый список в его текущем порядке."/><Label wrapText="true" text="Пациент видит свои записи. Администратор видит все записи и управляет пользователями. Новая запись создаётся для текущего пользователя. Регистрация не предоставляет прав администратора."/></VBox></Tab>
+ </TabPane></center>
+</BorderPane>

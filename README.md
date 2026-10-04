@@ -1,3 +1,18 @@
+# Java Hospital — КР2 / JavaFX
+
+Настольное приложение записи пациентов на приём, продолжение КР1. FXML, CSS, JDBC и PostgreSQL; существующие сущности и бизнес-правила сохранены.
+
+```bash
+docker compose up -d --wait
+./mvnw javafx:run
+```
+
+JavaFX читает подключение из `.env` в корне проекта; переменные окружения имеют приоритет. Нужны Java 21 и запущенный Docker. Подробные команды, соответствие КР2 и сценарий защиты: [docs/kr2.md](docs/kr2.md).
+
+Обычный запуск JAR открывает графический интерфейс. Для консольного интерфейса КР1 добавьте `--cli`; команды `--seed` и `--init-admin` сохранены.
+
+---
+
 # Java Hospital — запись пациента на приём
 
 Консольный учебный проект на Java 21 для КР 1: PostgreSQL, JDBC, Maven, два типа пользователей и запись к врачу. Интерфейс на русском языке. Данные сохраняются между запусками.
@@ -17,7 +32,7 @@ set +a
 docker compose up -d --wait
 ./mvnw clean package
 java -jar target/java-hospital-1.0.0.jar --seed
-java -jar target/java-hospital-1.0.0.jar
+java -jar target/java-hospital-1.0.0.jar --cli
 ```
 
 `--seed` запускают один раз на пустой базе. Он создаёт 5 пользователей и 12 записей, в том числе завершённые, отменённые, предстоящие и перенесённые. Повторная инициализация отклоняется, существующие данные сохраняются.
@@ -36,7 +51,7 @@ java -jar target/java-hospital-1.0.0.jar --init-admin
 
 Потом пациенты регистрируются из стартового меню. Самостоятельная регистрация всегда создаёт роль `PATIENT`.
 
-На Windows используйте `mvnw.cmd clean package`. Для запуска из PowerShell задайте `$env:DB_PASSWORD = 'change-me-local-password'`, запустите `docker compose up -d --wait`, затем те же команды `java -jar ...`. Файл `.env` нужен Docker Compose; Java читает переменные окружения, а не `.env` напрямую.
+На Windows используйте `mvnw.cmd clean package`. Для запуска из PowerShell задайте `$env:DB_PASSWORD = 'change-me-local-password'`, запустите `docker compose up -d --wait`, затем те же команды `java -jar ...`. Консольные команды КР1 читают переменные окружения. JavaFX дополнительно читает `.env` автоматически.
 
 ### Своя PostgreSQL
 
@@ -47,7 +62,7 @@ export DB_URL='jdbc:postgresql://localhost:5432/hospital?connectTimeout=5&socket
 export DB_USER='hospital'
 export DB_PASSWORD='your-password'
 java -jar target/java-hospital-1.0.0.jar --seed
-java -jar target/java-hospital-1.0.0.jar
+java -jar target/java-hospital-1.0.0.jar --cli
 ```
 
 Значение `your-password` в этом примере является заглушкой: замените его реальным паролем пользователя PostgreSQL. Если используется база из `docker-compose.yml`, этот раздел выполнять не нужно — используйте команды из «Быстрого запуска» и переменные из `.env`.
@@ -140,7 +155,7 @@ ER-диаграмма: [docs/er-diagram.md](docs/er-diagram.md). Справка 
 ./mvnw test
 ```
 
-Для тестов нужен запущенный Docker. Testcontainers автоматически поднимает временный PostgreSQL, выполняет все 13 тестов и удаляет контейнер. Переменные окружения для обычного запуска не нужны.
+Для тестов нужен запущенный Docker. Testcontainers автоматически поднимает временный PostgreSQL, выполняет 13 проверок бизнес-логики и удаляет контейнер. Дополнительный графический тест запускается с `-Dhospital.uiTests=true` (см. КР2). Переменные окружения для обычного запуска не нужны.
 
 При необходимости Testcontainers можно отключить и запустить тесты на внешней **отдельной** PostgreSQL-базе. Для этого все три переменные должны быть заполнены. Имя базы обязано заканчиваться на `_test`, потому что тесты очищают таблицы перед каждым сценарием:
 

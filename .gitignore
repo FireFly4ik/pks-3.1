@@ -5,3 +5,7 @@ exports/
 .idea/
 *.iml
 .env
+
+# Учебный архив — локальный пример, не исходники Hospital
+student-hub-suite-rebuilt/
+.DS_Store

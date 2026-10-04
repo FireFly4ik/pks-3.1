@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.mirea.hospital.fx.UsersController" fx:id="root" prefWidth="680" spacing="12" styleClass="card">
+ <Label text="Управление пользователями" styleClass="heading"/>
+ <TableView fx:id="table" prefHeight="240"/>
+ <Label text="Для изменения ФИО выберите строку. Для нового пациента заполните все поля." wrapText="true"/>
+ <TextField fx:id="login" promptText="Логин нового пациента"/><TextField fx:id="name" promptText="ФИО"/><PasswordField fx:id="password" promptText="Пароль нового пациента, 8–128 символов"/>
+ <FlowPane hgap="8" vgap="8"><Button text="Добавить пациента" onAction="#add" styleClass="primary"/><Button text="Сохранить ФИО выбранного" onAction="#rename"/><Button text="Удалить выбранного" onAction="#delete" styleClass="danger"/></FlowPane>
+</VBox>

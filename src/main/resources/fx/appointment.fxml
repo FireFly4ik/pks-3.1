@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.mirea.hospital.fx.AppointmentController" fx:id="root" spacing="12" prefWidth="460" styleClass="card">
+ <Label fx:id="title" styleClass="heading"/>
+ <Label text="Специальность"/><ComboBox fx:id="specialty" maxWidth="Infinity" onAction="#loadTimes" promptText="Выберите направление"/>
+ <Label text="Дата приёма"/><DatePicker fx:id="date" editable="false" maxWidth="Infinity" onAction="#loadTimes"/>
+ <Label text="Свободное время · Москва"/><ComboBox fx:id="time" maxWidth="Infinity" onAction="#loadDoctors" promptText="Сначала выберите дату"/>
+ <Label text="Свободный специалист"/><ComboBox fx:id="doctor" maxWidth="Infinity" promptText="Сначала выберите время"/>
+ <Label fx:id="hint" wrapText="true" text="Приём по будням, запись на ближайшие 90 дней."/>
+ <Button text="Сохранить запись" onAction="#save" styleClass="primary" maxWidth="Infinity"/>
+</VBox>
