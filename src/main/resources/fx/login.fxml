@@ -1,22 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.mirea.hospital.fx.LoginController" fx:id="root" alignment="CENTER" spacing="12" styleClass="page">
-  <Label text="КЛИНИКА / ЛИЧНЫЙ КАБИНЕТ" styleClass="eyebrow"/>
-  <Label text="Ваш следующий приём" styleClass="title"/>
-  <Label text="Войдите, чтобы управлять записями к специалистам."/>
-  <VBox maxWidth="420" spacing="8" styleClass="card">
-    <Label text="Логин"/><TextField fx:id="login" promptText="Например: gg_wp" onAction="#login"/>
-    <Label text="3–40 символов: латинские буквы, цифры, _ . -; без пробелов." wrapText="true" styleClass="field-hint"/>
-    <Label text="Пароль"/><PasswordField fx:id="password" promptText="От 8 до 128 символов" onAction="#login"/>
-    <Button text="Войти" onAction="#login" maxWidth="Infinity" styleClass="primary"/>
-    <Separator/>
-    <Label text="Регистрация: заполните логин и пароль выше, а также ФИО ниже." wrapText="true"/>
-    <Label text="ФИО для регистрации"/>
-    <TextField fx:id="name" promptText="Например: Иванов Иван Иванович"/>
-    <Label text="2–120 символов. Русские буквы и пробелы разрешены. Это не логин." wrapText="true" styleClass="field-hint"/>
-    <Button text="Зарегистрироваться" onAction="#register" maxWidth="Infinity"/>
-    <Label fx:id="feedback" wrapText="true" styleClass="success"/>
-  </VBox>
-  <Label text="Приём по будням · 09:00–17:00 · Московское время"/>
+<VBox xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="ru.mirea.hospital.fx.LoginController" 
+      fx:id="root" 
+      alignment="CENTER" 
+      spacing="12" 
+      styleClass="page">
+    
+    <Label text="КЛИНИКА / ЛИЧНЫЙ КАБИНЕТ" styleClass="eyebrow"/>
+    <Label fx:id="titleLabel" text="Ваш следующий приём" styleClass="title"/>
+    <Label fx:id="subtitleLabel" text="Войдите, чтобы управлять записями к специалистам."/>
+    
+    <VBox maxWidth="420" spacing="8" styleClass="card">
+        
+        <HBox spacing="8" alignment="CENTER">
+            <ToggleButton fx:id="loginModeBtn" text="Вход" onAction="#switchToLogin" styleClass="mode-toggle"/>
+            <ToggleButton fx:id="registerModeBtn" text="Регистрация" onAction="#switchToRegister" styleClass="mode-toggle"/>
+        </HBox>
+        <Separator/>
+
+        <Label text="Логин"/>
+        <TextField fx:id="login" promptText="Например: gg_wp" onAction="#handleSubmit"/>
+        <Label text="3–40 символов: латинские буквы, цифры, _ . -; без пробелов." wrapText="true" styleClass="field-hint"/>
+        
+        <Label text="Пароль"/>
+        <PasswordField fx:id="password" promptText="От 8 до 128 символов" onAction="#handleSubmit"/>
+        
+        <VBox fx:id="registerFields" spacing="8" visible="false" managed="false">
+            <Label text="ФИО для регистрации"/>
+            <TextField fx:id="name" promptText="Например: Иванов Иван Иванович"/>
+            <Label text="2–120 символов. Русские буквы и пробелы разрешены. Это не логин." wrapText="true" styleClass="field-hint"/>
+        </VBox>
+
+        <Button fx:id="submitButton" text="Войти" onAction="#handleSubmit" maxWidth="Infinity" styleClass="primary"/>
+        
+        <Label fx:id="feedback" wrapText="true" styleClass="success"/>
+        
+    </VBox>
+    <Label text="Приём по будням · 09:00–17:00 · Московское время"/>
 </VBox>
