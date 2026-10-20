@@ -29,12 +29,10 @@
         
         <VBox fx:id="registerFields" spacing="8" visible="false" managed="false">
             <Label text="ФИО для регистрации"/>
-            <TextField fx:id="name" promptText="Например: Иванов Иван Иванович"/>
-            <Label text="2–120 символов. Русские буквы и пробелы разрешены. Это не логин." wrapText="true" styleClass="field-hint"/>
+            <TextField fx:id="name" promptText="Иванов Иван Иванович"/>
         </VBox>
 
         <Button fx:id="submitButton" text="Войти" onAction="#handleSubmit" maxWidth="Infinity" styleClass="primary"/>
-        
         <Label fx:id="feedback" wrapText="true" styleClass="success"/>
         
     </VBox>
