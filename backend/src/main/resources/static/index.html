@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Регистратура клиники — расписание и записи пациентов">
+    <title>Регистратура клиники</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css?v=admin-swagger-v7">
+</head>
+<body>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<section id="login-view" class="login-shell">
+    <form id="login-form" class="card login-card" autocomplete="on">
+        <div class="brand-mark">КЛ</div>
+        <h1>Регистратура клиники</h1>
+        <p class="muted">Система управления данными приёмов</p>
+        <label>Email
+            <input id="login-email" type="email" autocomplete="username" required maxlength="254">
+        </label>
+        <label>Пароль
+            <input id="login-password" type="password" autocomplete="current-password" required maxlength="128">
+        </label>
+        <button class="primary" type="submit">Войти</button>
+        <p id="login-error" class="error" hidden></p>
+    </form>
+</section>
+
+<div id="app-view" class="app-shell" hidden>
+    <aside class="sidebar">
+        <div class="brand"><span class="brand-mark small">КЛ</span><strong>Регистратура клиники</strong></div>
+        <nav id="navigation">
+            <button data-tab="dashboard" class="nav-item active">Аналитика</button>
+            <button data-tab="appointments" class="nav-item">Записи</button>
+            <button data-tab="doctors" class="nav-item">Врачи</button>
+            <button data-tab="users" class="nav-item admin-only">Пользователи</button>
+            <button data-tab="audit" class="nav-item admin-only">Аудит</button>
+
+            <!--
+                Swagger доступен только администратору.
+                Серверная роль при этом остаётся ADMIN; это лишь UI-ссылка,
+                а не замена серверной авторизации REST-методов.
+            -->
+            <a href="/swagger-ui.html"
+               class="nav-item nav-link admin-only"
+               target="_blank"
+               rel="noopener noreferrer"
+               title="Открыть Swagger UI в новой вкладке">
+                Swagger API ↗
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div id="current-user" class="current-user"></div>
+            <button id="change-password" class="secondary full">Сменить пароль</button>
+            <button id="logout" class="danger-outline full">Выйти</button>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="topbar">
+            <div>
+                <h2 id="page-title">Аналитика</h2>
+                <p id="page-subtitle" class="muted">Основные показатели по приёмам</p>
+            </div>
+            <span id="connection-state" class="badge success">API подключён</span>
+        </header>
+
+        <section id="tab-dashboard" class="tab active">
+            <div id="metric-grid" class="metric-grid"></div>
+            <div class="grid-3">
+                <article class="card"><h3>По врачам</h3><div id="chart-doctors" class="bar-list"></div></article>
+                <article class="card"><h3>По статусам</h3><div id="chart-status" class="bar-list"></div></article>
+                <article class="card"><h3>По приоритету</h3><div id="chart-priority" class="bar-list"></div></article>
+            </div>
+        </section>
+
+        <section id="tab-appointments" class="tab">
+            <div class="toolbar card">
+                <div class="search-wrap">
+                    <input id="appointment-search" type="search" maxlength="500"
+                           placeholder="Иванов врач:DOC-1 готовность<60 звонок:да приоритет:высокий">
+                    <select id="visit-sort" aria-label="Сортировка"><option value="startsAt,asc">По времени приёма ↑</option><option value="startsAt,desc">По времени приёма ↓</option><option value="created,desc">Сначала новые записи</option><option value="patientLogin,asc">По логину пациента</option><option value="created,asc">Сначала старые записи</option></select>
+                    <button id="search-appointments" class="primary">Найти</button>
+                </div>
+                <div class="toolbar-actions editor-only">
+                    <button id="add-appointment" class="primary">+ Приём</button>
+                    <button id="bulk-action" class="secondary">Массовая операция</button>
+                    <button id="import-csv" class="secondary">Импорт CSV</button>
+                    <button id="export-csv" class="secondary">Экспорт CSV</button>
+                </div>
+                <details class="filter-help">
+                    <summary>Подсказка по умному фильтру</summary>
+                    <code>врач:DOC-1 статус:предстоит звонок:да готовность&lt;60 приоритет:высокий тег:контроль архив:все</code>
+                </details>
+            </div>
+            <div class="card table-card">
+                <div class="table-scroll">
+                    <table>
+                        <thead><tr>
+                            <th class="editor-only"><input id="select-all-appointments" type="checkbox" aria-label="Выбрать всех"></th>
+                            <th>Приём и пациент</th><th>Врач</th><th>Статус</th><th>Готовность, %</th><th>Нужен звонок</th><th>Приоритет</th><th>Теги</th><th>Действия</th>
+                        </tr></thead>
+                        <tbody id="appointments-body"></tbody>
+                    </table>
+                </div>
+                <div class="pager">
+                    <button id="appointments-prev" class="secondary">←</button>
+                    <span id="appointments-page"></span>
+                    <button id="appointments-next" class="secondary">→</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-doctors" class="tab">
+            <div class="toolbar card">
+                <p>Врачи используются всеми клиентами и проверяются сервером.</p>
+                <button id="add-doctor" class="primary admin-only">+ Врач</button>
+            </div>
+            <div class="card table-card"><div class="table-scroll"><table>
+                <thead><tr><th>Код</th><th>ФИО</th><th>Специальность</th><th>Активен</th><th class="admin-only">Действия</th></tr></thead>
+                <tbody id="doctors-body"></tbody>
+            </table></div></div>
+        </section>
+
+        <section id="tab-users" class="tab admin-only">
+            <div class="toolbar card"><button id="add-user" class="primary">+ Пользователь</button></div>
+            <div class="card table-card"><div class="table-scroll"><table>
+                <thead><tr><th>Email</th><th>Имя</th><th>Роли</th><th>Активен</th><th>Временный пароль</th><th>Действия</th></tr></thead>
+                <tbody id="users-body"></tbody>
+            </table></div></div>
+        <div class="pager"><button id="users-prev" class="secondary">←</button><span id="users-page"></span><button id="users-next" class="secondary">→</button></div>
+        </section>
+
+        <section id="tab-audit" class="tab admin-only">
+            <div class="toolbar card search-wrap">
+                <input id="audit-search" type="search" maxlength="200" placeholder="Пользователь, событие, correlation ID">
+                <button id="search-audit" class="primary">Найти</button>
+            </div>
+            <div class="card table-card"><div class="table-scroll"><table>
+                <thead><tr><th>Дата</th><th>Пользователь</th><th>Событие</th><th>Сущность</th><th>Описание</th><th>Correlation ID</th></tr></thead>
+                <tbody id="audit-body"></tbody>
+            </table></div></div>
+        <div class="pager"><button id="audit-prev" class="secondary">←</button><span id="audit-page"></span><button id="audit-next" class="secondary">→</button></div>
+        </section>
+    </main>
+</div>
+
+<dialog id="entity-dialog"><form id="entity-form" method="dialog" class="dialog-form"></form></dialog>
+<dialog id="notes-dialog"><div class="dialog-form wide"><div class="dialog-head"><h3>Заметки</h3><button data-close-dialog="notes-dialog" class="icon-button">×</button></div><div id="notes-list"></div><form id="note-form"><textarea id="note-body" maxlength="4000" required placeholder="Текст заметки"></textarea><label class="inline"><input id="note-pinned" type="checkbox"> Закрепить</label><button class="primary">Добавить заметку</button></form></div></dialog>
+<dialog id="csv-dialog"><div class="dialog-form wide"><div class="dialog-head"><h3>Импорт CSV</h3><button data-close-dialog="csv-dialog" class="icon-button">×</button></div><input id="csv-file" type="file" accept=".csv,text/csv"><label>Режим<select id="csv-mode"><option value="CREATE_ONLY">Только новые</option><option value="UPSERT_BY_EXTERNAL_ID">Обновить по externalId</option></select></label><div class="button-row"><button id="csv-preview" class="secondary">Проверить</button><button id="csv-apply" class="primary" disabled>Применить</button></div><pre id="csv-result" class="result-box"></pre></div></dialog>
+<script src="/app.js?v=roles-phone-priority-v6" defer></script>
+</body>
+</html>

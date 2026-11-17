@@ -45,7 +45,7 @@ public class JdbcAppointmentRepository implements AppointmentRepository {
     }
 
     public List<Doctor> doctors() {
-        String sql = "SELECT * FROM doctors ORDER BY specialty, full_name";
+        String sql = "SELECT * FROM doctors WHERE active ORDER BY specialty, full_name";
         try (var c = db.connect();
                 var s = c.prepareStatement(sql);
                 var r = s.executeQuery()) {
@@ -99,7 +99,9 @@ public class JdbcAppointmentRepository implements AppointmentRepository {
                         if (!r.next()) throw new BusinessException("Пациент не найден.");
                     }
                 }
-                try (var s = c.prepareStatement("SELECT id FROM doctors WHERE id = ? FOR UPDATE")) {
+                try (var s =
+                        c.prepareStatement(
+                                "SELECT id FROM doctors WHERE id = ? AND active FOR UPDATE")) {
                     s.setLong(1, doctorId);
                     try (var r = s.executeQuery()) {
                         if (!r.next()) throw new BusinessException("Врач не найден.");

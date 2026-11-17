@@ -9,3 +9,5 @@ exports/
 # Учебный архив — локальный пример, не исходники Hospital
 student-hub-suite-rebuilt/
 .DS_Store
+
+.env.kr3

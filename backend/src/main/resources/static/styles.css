@@ -1,0 +1,139 @@
+:root {
+    color-scheme: light;
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --surface-2: #f8faff;
+    --text: #172033;
+    --muted: #687086;
+    --line: #e2e7f0;
+    --primary: #335dff;
+    --primary-dark: #2649d8;
+    --danger: #c73545;
+    --success: #178657;
+    --warning: #b36a00;
+    --shadow: 0 12px 35px rgba(33, 52, 91, .08);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+
+/*
+ * .login-shell и .app-shell используют display:grid, поэтому для hidden
+ * задаётся отдельное правило с !important.
+ */
+[hidden] {
+    display: none !important;
+}
+body { margin: 0; background: var(--bg); color: var(--text); }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+label { display: grid; gap: .45rem; font-weight: 600; color: #34405a; }
+input, select, textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: .72rem .85rem;
+    background: #fff; color: var(--text); outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(51,93,255,.12); }
+textarea { min-height: 110px; resize: vertical; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.muted { color: var(--muted); }
+.error { color: var(--danger); font-weight: 600; }
+.form-message {
+    border: 1px solid #f0bdc4;
+    background: #fff0f2;
+    color: var(--danger);
+    border-radius: 10px;
+    padding: .75rem .85rem;
+    font-weight: 600;
+}
+
+.primary, .secondary, .danger-outline, .icon-button {
+    border-radius: 10px; padding: .68rem .95rem; border: 1px solid transparent; font-weight: 700;
+}
+.primary { color: #fff; background: var(--primary); }
+.primary:hover { background: var(--primary-dark); }
+.secondary { background: #fff; color: #34405a; border-color: var(--line); }
+.danger-outline { background: #fff; color: var(--danger); border-color: #f0bdc4; }
+.full { width: 100%; }
+.login-shell { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; background: radial-gradient(circle at top, #eaf0ff, var(--bg) 55%); }
+.login-card { width: min(420px, 100%); padding: 2rem; display: grid; gap: 1rem; text-align: center; }
+.brand-mark { width: 62px; height: 62px; display: grid; place-items: center; margin: auto; border-radius: 18px; background: linear-gradient(135deg,#335dff,#7a4cff); color: white; font-weight: 900; font-size: 1.25rem; }
+.brand-mark.small { width: 38px; height: 38px; margin: 0; border-radius: 11px; font-size: .85rem; }
+.app-shell { min-height: 100vh; display: grid; grid-template-columns: 260px 1fr; }
+.sidebar { position: sticky; top: 0; height: 100vh; background: #111a2d; color: #fff; padding: 1.1rem; display: flex; flex-direction: column; gap: 1.2rem; }
+.brand { display: flex; align-items: center; gap: .75rem; padding: .35rem; }
+nav { display: grid; gap: .35rem; }
+.nav-item { border: 0; text-align: left; padding: .8rem 1rem; border-radius: 10px; color: #bfc8dc; background: transparent; font-weight: 700; }
+.nav-item:hover, .nav-item.active { color: #fff; background: rgba(255,255,255,.1); }
+
+/* Оформление ссылки Swagger в том же виде, что и остальные пункты меню. */
+.nav-link {
+    display: block;
+    text-decoration: none;
+}
+.sidebar-footer { margin-top: auto; display: grid; gap: .65rem; }
+.current-user { color: #d7deed; font-size: .9rem; padding: .5rem; overflow-wrap: anywhere; }
+.content { min-width: 0; padding: 1.5rem 2rem 3rem; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.4rem; }
+.topbar h2 { margin: 0 0 .25rem; }
+.topbar p { margin: 0; }
+.tab { display: none; }
+.tab.active { display: block; }
+.metric-grid { display: grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.metric { padding: 1.15rem; }
+.metric strong { display: block; font-size: 1.8rem; margin-top: .35rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.grid-3 .card { padding: 1.1rem; }
+.bar-list { display: grid; gap: .65rem; }
+.bar-row { display: grid; grid-template-columns: minmax(85px, 1fr) 3fr auto; gap: .55rem; align-items: center; font-size: .88rem; }
+progress { width: 100%; height: 10px; accent-color: var(--primary); }
+.toolbar { padding: 1rem; margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; justify-content: space-between; }
+.search-wrap { display: flex; gap: .55rem; flex: 1; min-width: min(500px,100%); }
+.toolbar-actions, .button-row { display: flex; flex-wrap: wrap; gap: .55rem; }
+.filter-help { width: 100%; color: var(--muted); }
+.filter-help code { display: block; padding: .6rem; background: var(--surface-2); margin-top: .5rem; overflow-wrap: anywhere; }
+.table-card { overflow: hidden; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 760px; }
+th, td { padding: .8rem .85rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+th { background: var(--surface-2); color: #566078; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+td { font-size: .9rem; }
+tr.archived { opacity: .63; }
+.actions { display: flex; gap: .35rem; flex-wrap: wrap; }
+.actions button { padding: .42rem .6rem; font-size: .8rem; }
+.badge { display: inline-flex; align-items: center; width: fit-content; border-radius: 999px; padding: .28rem .58rem; font-size: .78rem; font-weight: 800; background: #edf1f8; color: #4d5870; }
+.badge.success, .priority-LOW { background: #e5f7ef; color: var(--success); }
+.priority-NOT_APPLICABLE { background: #edf1f8; color: #687086; }
+.badge.warning, .priority-MEDIUM { background: #fff2d9; color: var(--warning); }
+.priority-HIGH { background: #ffe5db; color: #b84a17; }
+.priority-CRITICAL { background: #ffe1e5; color: var(--danger); }
+.pager { padding: .8rem; display: flex; justify-content: center; align-items: center; gap: .8rem; }
+dialog { border: 0; border-radius: 18px; padding: 0; box-shadow: 0 30px 80px rgba(18,28,52,.25); width: min(620px, calc(100% - 2rem)); }
+dialog::backdrop { background: rgba(14,22,39,.56); backdrop-filter: blur(2px); }
+.dialog-form { padding: 1.25rem; display: grid; gap: 1rem; max-height: 85vh; overflow: auto; }
+.dialog-form.wide { width: 100%; }
+.dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.dialog-head h3 { margin: 0; }
+.icon-button { border: 0; background: transparent; font-size: 1.4rem; padding: .25rem .5rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.form-grid .span-2 { grid-column: span 2; }
+.inline { display: flex; align-items: center; gap: .5rem; }
+.inline input { width: auto; }
+.note { border: 1px solid var(--line); border-radius: 12px; padding: .8rem; margin-bottom: .6rem; }
+.note-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .78rem; }
+.result-box { min-height: 130px; max-height: 300px; overflow: auto; background: #111a2d; color: #e7ecf7; border-radius: 10px; padding: .8rem; white-space: pre-wrap; }
+.toast { position: fixed; right: 1rem; bottom: 1rem; z-index: 1000; max-width: 420px; padding: .8rem 1rem; border-radius: 10px; color: #fff; background: #202b42; box-shadow: var(--shadow); opacity: 0; transform: translateY(10px); pointer-events: none; transition: .2s; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { background: var(--danger); }
+@media (max-width: 1050px) {
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+    .app-shell { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .sidebar-footer { margin-top: 0; }
+    .content { padding: 1rem; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .span-2 { grid-column: auto; }
+    .search-wrap { min-width: 100%; flex-direction: column; }
+}

@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: hospital-web
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/hospital}
+    username: ${SPRING_DATASOURCE_USERNAME:hospital}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 5000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: true
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-store: true
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: strict
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: false
+  api-docs:
+    path: /v3/api-docs
+
+app:
+  jwt:
+    secret-base64: ${JWT_SECRET_BASE64}
+    issuer: ${JWT_ISSUER:hospital-web}
+    access-minutes: ${ACCESS_TOKEN_MINUTES:10}
+    refresh-days: ${REFRESH_TOKEN_DAYS:14}
+  bootstrap:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    name: ${BOOTSTRAP_ADMIN_NAME:System Administrator}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
+  cookie-secure: ${COOKIE_SECURE:false}
+  permanent-delete-enabled: ${PERMANENT_DELETE_ENABLED:false}
+  import-limits:
+    max-rows: 5000

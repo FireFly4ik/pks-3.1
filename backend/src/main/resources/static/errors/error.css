@@ -1,0 +1,116 @@
+:root {
+    color-scheme: light;
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --text: #172033;
+    --muted: #687086;
+    --line: #e2e7f0;
+    --primary: #335dff;
+    --primary-dark: #2649d8;
+    --danger: #c73545;
+    --shadow: 0 24px 70px rgba(33, 52, 91, .13);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 50% -10%, #e7edff 0, transparent 45%),
+        var(--bg);
+    color: var(--text);
+}
+
+.error-card {
+    width: min(680px, 100%);
+    padding: clamp(28px, 6vw, 56px);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    color: #34405a;
+    font-weight: 800;
+}
+
+.brand-mark {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(135deg, #335dff, #7a4cff);
+    font-size: 13px;
+}
+
+.code {
+    margin: 0;
+    font-size: clamp(72px, 18vw, 150px);
+    line-height: .9;
+    letter-spacing: -.07em;
+    color: var(--primary);
+}
+
+.server .code { color: var(--danger); }
+
+h1 {
+    margin: 26px 0 10px;
+    font-size: clamp(26px, 5vw, 38px);
+}
+
+p {
+    margin: 0 auto;
+    max-width: 540px;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+.actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    text-decoration: none;
+    color: #34405a;
+    background: #fff;
+    font-weight: 750;
+}
+
+.button.primary {
+    color: #fff;
+    border-color: var(--primary);
+    background: var(--primary);
+}
+
+.button.primary:hover { background: var(--primary-dark); }
+
+.hint {
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+}
