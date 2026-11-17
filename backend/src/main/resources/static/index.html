@@ -6,17 +6,22 @@
     <meta name="description" content="Регистратура клиники — расписание и записи пациентов">
     <title>Регистратура клиники</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/styles.css?v=admin-swagger-v7">
+    <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/patient.css">
 </head>
 <body>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <section id="login-view" class="login-shell">
+    <div class="auth-layout">
+    <aside class="auth-cover">
+        <div class="brand"><span class="clinic-mark" aria-hidden="true"></span><strong>Регистратура клиники</strong></div>
+        <div class="cover-art" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="clinic-hours"><h2>Часы приёма</h2><strong>09:00 — 17:00</strong><p>Понедельник — пятница · по Москве</p></div>
+    </aside>
     <form id="login-form" class="card login-card" autocomplete="on">
-        <div class="brand-mark">КЛ</div>
-        <h1>Регистратура клиники</h1>
-        <p class="muted">Система управления данными приёмов</p>
+        <h1>Вход в кабинет</h1>
+        <p class="muted">Введите email и пароль вашего аккаунта.</p>
         <label>Email
             <input id="login-email" type="email" autocomplete="username" required maxlength="254">
         </label>
@@ -38,10 +43,11 @@
         <button id="back-to-login" class="secondary" type="button">Вернуться ко входу</button>
         <p id="register-error" role="alert" class="error" hidden></p>
     </form>
+    </div>
 </section>
 <section id="account-view" class="app-shell patient-shell" hidden>
     <aside class="sidebar patient-sidebar">
-        <div class="brand"><span class="clinic-mark" aria-hidden="true">+</span><strong>Регистратура<br><small>Кабинет пациента</small></strong></div>
+        <div class="brand"><span class="clinic-mark" aria-hidden="true"></span><strong>Регистратура<br><small>Кабинет пациента</small></strong></div>
         <button id="patient-menu" type="button" aria-expanded="false" aria-controls="patient-navigation patient-profile">Меню</button>
         <nav id="patient-navigation" aria-label="Личный кабинет">
             <button data-screen="home">Обзор</button>
@@ -101,8 +107,9 @@
 
 <div id="app-view" class="app-shell" hidden>
     <aside class="sidebar">
-        <div class="brand"><span class="brand-mark small">КЛ</span><strong>Регистратура клиники</strong></div>
-        <nav id="navigation">
+        <div class="brand"><span class="clinic-mark" aria-hidden="true"></span><strong>Регистратура<br><small>Кабинет сотрудника</small></strong></div>
+        <button id="staff-menu" type="button" aria-expanded="false" aria-controls="navigation staff-profile">Меню</button>
+        <nav id="navigation" aria-label="Кабинет сотрудника">
             <button data-tab="dashboard" class="nav-item active">Аналитика</button>
             <button data-tab="appointments" class="nav-item">Записи</button>
             <button data-tab="doctors" class="nav-item">Врачи</button>
@@ -122,7 +129,7 @@
                 Swagger API ↗
             </a>
         </nav>
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" id="staff-profile">
             <div id="current-user" class="current-user"></div>
             <button id="change-password" class="secondary full">Сменить пароль</button>
             <button id="logout" class="danger-outline full">Выйти</button>
@@ -132,10 +139,10 @@
     <main class="content">
         <header class="topbar">
             <div>
-                <h2 id="page-title">Аналитика</h2>
+                <h1 id="page-title">Аналитика</h1>
                 <p id="page-subtitle" class="muted">Основные показатели по приёмам</p>
             </div>
-            <span id="connection-state" class="badge success">API подключён</span>
+
         </header>
 
         <section id="tab-dashboard" class="tab active">
@@ -150,7 +157,7 @@
         <section id="tab-appointments" class="tab">
             <div class="toolbar card">
                 <div class="search-wrap">
-                    <input id="appointment-search" type="search" maxlength="500"
+                    <input id="appointment-search" type="search" aria-label="Поиск записей" maxlength="500"
                            placeholder="Иванов врач:DOC-1 готовность<60 звонок:да приоритет:высокий">
                     <select id="visit-sort" aria-label="Сортировка"><option value="startsAt,asc">По времени приёма ↑</option><option value="startsAt,desc">По времени приёма ↓</option><option value="created,desc">Сначала новые записи</option><option value="patientLogin,asc">По логину пациента</option><option value="created,asc">Сначала старые записи</option></select>
                     <button id="search-appointments" class="primary">Найти</button>
@@ -186,7 +193,7 @@
 
         <section id="tab-doctors" class="tab">
             <div class="toolbar card">
-                <p>Врачи используются всеми клиентами и проверяются сервером.</p>
+                <span class="muted" id="doctor-count"></span>
                 <button id="add-doctor" class="primary admin-only">+ Врач</button>
             </div>
             <div class="card table-card"><div class="table-scroll"><table>
@@ -206,7 +213,7 @@
 
         <section id="tab-audit" class="tab admin-only">
             <div class="toolbar card search-wrap">
-                <input id="audit-search" type="search" maxlength="200" placeholder="Пользователь, событие, correlation ID">
+                <input id="audit-search" aria-label="Поиск по журналу аудита" type="search" maxlength="200" placeholder="Пользователь, событие, correlation ID">
                 <button id="search-audit" class="primary">Найти</button>
             </div>
             <div class="card table-card"><div class="table-scroll"><table>
@@ -222,6 +229,6 @@
 <dialog id="notes-dialog"><div class="dialog-form wide"><div class="dialog-head"><h3>Заметки</h3><button data-close-dialog="notes-dialog" class="icon-button">×</button></div><div id="notes-list"></div><form id="note-form"><textarea id="note-body" maxlength="4000" required placeholder="Текст заметки"></textarea><label class="inline"><input id="note-pinned" type="checkbox"> Закрепить</label><button class="primary">Добавить заметку</button></form></div></dialog>
 <dialog id="csv-dialog"><div class="dialog-form wide"><div class="dialog-head"><h3>Импорт CSV</h3><button data-close-dialog="csv-dialog" class="icon-button">×</button></div><input id="csv-file" type="file" accept=".csv,text/csv"><label>Режим<select id="csv-mode"><option value="CREATE_ONLY">Только новые</option><option value="UPSERT_BY_EXTERNAL_ID">Обновить по externalId</option></select></label><div class="button-row"><button id="csv-preview" class="secondary">Проверить</button><button id="csv-apply" class="primary" disabled>Применить</button></div><pre id="csv-result" class="result-box"></pre></div></dialog>
 <script src="/patient.js" defer></script>
-<script src="/app.js?v=roles-phone-priority-v6" defer></script>
+<script src="/app.js" defer></script>
 </body>
 </html>

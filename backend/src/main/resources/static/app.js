@@ -268,6 +268,8 @@ function applyRoleVisibility() {
 }
 
 function switchTab(name) {
+    $('app-view').classList.remove('menu-open');
+    $('staff-menu').setAttribute('aria-expanded','false');
     document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === `tab-${name}`));
     document.querySelectorAll('.nav-item').forEach(button => button.classList.toggle('active', button.dataset.tab === name));
     const titles = {
@@ -318,14 +320,25 @@ async function loadDoctors() {
     catch (error) { toast(error.message, true); }
 }
 
+function labelTableCells(body) {
+    const headers = body.closest('table').tHead.rows[0].cells;
+    for (const row of body.rows) {
+        for (const cell of row.cells) {
+            if (cell.colSpan === 1) cell.dataset.label = headers[cell.cellIndex].textContent.trim() || 'Выбрать запись';
+        }
+    }
+}
+
 function renderDoctors() {
     const body = $('doctors-body');
     if (!body) return;
+    $('doctor-count').textContent = `Врачей: ${state.doctors.length} · Активных: ${state.doctors.filter(d => d.active).length}`;
     body.innerHTML = state.doctors.map(doctor => `<tr>
         <td><strong>${escapeHtml(doctor.code)}</strong></td><td>${escapeHtml(doctor.name || '—')}</td><td>${escapeHtml(doctor.specialty || '—')}</td>
         <td><span class="badge ${doctor.active ? 'success' : ''}">${doctor.active ? 'Да' : 'Нет'}</span></td>
         <td class="admin-only"><div class="actions"><button class="secondary" data-doctor-edit="${doctor.id}">Изменить</button><button class="secondary" data-doctor-toggle="${doctor.id}">${doctor.active ? 'Отключить' : 'Включить'}</button></div></td>
     </tr>`).join('');
+    labelTableCells(body);
     applyRoleVisibility();
 }
 
@@ -343,7 +356,7 @@ function renderAppointments() {
     $('appointments-body').innerHTML = state.appointments.content.map(appointment => `<tr class="${appointment.archived ? 'archived' : ''}">
         <td class="editor-only"><input type="checkbox" data-appointment-select="${appointment.id}"></td>
         <td><strong>${escapeHtml(appointment.reason)}</strong><br><small class="muted">${escapeHtml(appointment.patientLogin)} · ${formatDate(appointment.startsAt)} · ${escapeHtml(appointment.externalId || '')}</small></td>
-        <td>${escapeHtml(appointment.doctorCode || '—')}</td><td>${escapeHtml(statusLabel(appointment.status))}</td>
+        <td>${escapeHtml(appointment.doctorCode || '—')}</td><td><span class="badge" data-status="${escapeHtml(appointment.status)}">${escapeHtml(statusLabel(appointment.status))}</span></td>
         <td>${appointment.readiness ?? '—'}</td><td>${appointment.needsCall ? '<span class="badge warning">Да</span>' : 'Нет'}</td>
         <td><span class="badge priority-${appointment.priorityLevel}">${escapeHtml(priorityLabel(appointment.priorityLevel))}</span></td>
         <td>${appointment.tags.map(tag => `<span class="badge">${escapeHtml(tag)}</span>`).join(' ') || '—'}</td>
@@ -353,6 +366,7 @@ function renderAppointments() {
             ${isAdmin() && appointment.archived ? `<button class="danger-outline" data-permanent="${appointment.id}">Удалить навсегда</button>` : ''}
         </div></td>
     </tr>`).join('') || '<tr><td colspan="9" class="muted">Записи не найдены</td></tr>';
+    labelTableCells($('appointments-body'));
     $('appointments-page').textContent = `Страница ${state.appointments.page + 1} из ${Math.max(1,state.appointments.totalPages)} · записей ${state.appointments.totalElements}`;
     $('appointments-prev').disabled = state.appointments.first;
     $('appointments-next').disabled = state.appointments.last;
@@ -502,6 +516,7 @@ async function loadUsers(number = 0) {
         $('users-next').onclick = () => loadUsers(page.page + 1);
         $('users-page').textContent = `Страница ${page.page + 1} из ${Math.max(1, page.totalPages)}`;
         $('users-body').innerHTML = page.content.map(user => `<tr><td>${escapeHtml(user.email)}</td><td>${escapeHtml(user.displayName)}</td><td>${user.roles.map(r=>`<span class="badge">${escapeHtml(roleLabel(r))}</span>`).join(' ')}</td><td>${user.enabled?'Да':'Нет'}</td><td>${user.passwordChangeRequired?'Да':'Нет'}</td><td><div class="actions"><button class="secondary" data-user-edit="${user.id}">Изменить</button><button class="secondary" data-user-reset="${user.id}">Сбросить пароль</button></div></td></tr>`).join('');
+        labelTableCells($('users-body'));
         state.users = page.content;
     } catch (error) { toast(error.message,true); }
 }
@@ -539,6 +554,7 @@ async function loadAudit(number = 0) {
         $('audit-next').onclick = () => loadAudit(page.page + 1);
         $('audit-page').textContent = `Страница ${page.page + 1} из ${Math.max(1, page.totalPages)}`;
         $('audit-body').innerHTML=page.content.map(item=>`<tr><td>${formatDate(item.occurredAt)}</td><td>${escapeHtml(item.actorEmail||'system')}</td><td>${escapeHtml(item.eventType)}</td><td>${escapeHtml(item.entityType||'—')}</td><td>${escapeHtml(item.summary)}</td><td><code>${escapeHtml(item.correlationId||'—')}</code></td></tr>`).join('');
+        labelTableCells($('audit-body'));
     } catch(error){toast(error.message,true);}
 }
 
@@ -725,6 +741,10 @@ function bindEvents() {
             button.textContent = originalCaption;
         }
     });
+    $('staff-menu').onclick = () => {
+        const open = $('app-view').classList.toggle('menu-open');
+        $('staff-menu').setAttribute('aria-expanded', String(open));
+    };
     $('navigation').addEventListener('click',event=>{const button=event.target.closest('[data-tab]');if(button&&!button.hidden)switchTab(button.dataset.tab);});
     $('logout').addEventListener('click',logout); $('change-password').addEventListener('click',()=>openPasswordDialog(false));
     $('visit-sort').addEventListener('change', () => loadAppointments(0));

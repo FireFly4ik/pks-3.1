@@ -1,0 +1,24 @@
+:root {
+    color-scheme: light;
+    --bg: #f5f6f0;
+    --surface: #fff;
+    --surface-2: #f0f4ed;
+    --text: #193a32;
+    --muted: #546b60;
+    --line: #d9e2d9;
+    --primary: #11634f;
+    --primary-dark: #0b493b;
+    --forest: #133f34;
+    --mint: #ccebd6;
+    --lime: #e1efa9;
+    --danger: #ac3041;
+    --success: #146145;
+    --warning: #805300;
+    --shadow: 0 4px 16px rgba(29,65,46,.055);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+:focus-visible { outline: 3px solid #368a71; outline-offset: 3px; }
+.clinic-mark, .brand-mark {
+    display: inline-block; width: 42px; height: 42px; flex-shrink: 0;
+    background: url('/favicon.svg') center/contain no-repeat;
+}
