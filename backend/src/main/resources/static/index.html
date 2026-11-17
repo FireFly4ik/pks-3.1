@@ -7,6 +7,7 @@
     <title>Регистратура клиники</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/styles.css?v=admin-swagger-v7">
+    <link rel="stylesheet" href="/patient.css">
 </head>
 <body>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -38,21 +39,64 @@
         <p id="register-error" role="alert" class="error" hidden></p>
     </form>
 </section>
-<section id="account-view" class="patient-portal" hidden>
-    <header class="topbar"><div><h1>Личный кабинет пациента</h1><p id="account-email"></p></div>
-        <button id="account-logout" class="secondary">Выйти</button>
-    </header>
-    <form id="patient-book" class="card dialog-form">
-        <h2>Записаться на приём</h2>
-        <label>Специальность<select id="patient-specialty" required></select></label>
-        <label>Врач<select id="patient-doctor" required></select></label>
-        <label>Дата приёма<input id="patient-date" type="date" required></label>
-        <label>Свободное время по Москве<select id="patient-slot" required></select></label>
-        <label>Причина обращения<input name="reason" maxlength="100" required></label>
-        <button class="primary" type="submit">Записаться</button>
-        <p id="patient-feedback" role="status"></p>
-    </form>
-    <article class="card"><h2>Мои записи</h2><div id="patient-visits"></div></article>
+<section id="account-view" class="app-shell patient-shell" hidden>
+    <aside class="sidebar patient-sidebar">
+        <div class="brand"><span class="clinic-mark" aria-hidden="true">+</span><strong>Регистратура<br><small>Кабинет пациента</small></strong></div>
+        <button id="patient-menu" type="button" aria-expanded="false" aria-controls="patient-navigation patient-profile">Меню</button>
+        <nav id="patient-navigation" aria-label="Личный кабинет">
+            <button data-screen="home">Обзор</button>
+            <button data-screen="booking">Записаться к врачу</button>
+            <button data-screen="visits">Мои записи</button>
+            <button data-screen="stats">Статистика</button>
+        </nav>
+        <div id="patient-profile" class="sidebar-footer"><strong id="patient-name"></strong><small id="account-email"></small>
+            <button id="patient-password" class="secondary">Сменить пароль</button>
+            <button id="account-logout" class="secondary">Выйти</button>
+        </div>
+    </aside>
+    <main class="patient-main">
+        <header class="patient-top"><div><p>Личный кабинет</p><h1 id="patient-title">Обзор</h1></div><time id="patient-today"></time></header>
+        <p id="patient-alert" role="status" class="portal-message" hidden></p>
+        <section data-page="home">
+            <article class="next-visit">
+                <div><h2>Ближайший приём</h2><div id="patient-next"></div>
+                    <button class="primary" data-new-booking>Записаться к врачу</button></div>
+                <div id="patient-calendar" class="date-sheet" aria-hidden="true"></div>
+            </article>
+            <div class="patient-section-head"><h2>Последние записи</h2><button class="text-action" data-open-visits>Все записи →</button></div>
+            <div id="patient-recent"></div>
+        </section>
+        <section data-page="booking" hidden>
+            <div class="booking-layout">
+                <form id="patient-book" class="patient-panel">
+                    <h2 id="booking-title">Выберите приём</h2>
+                    <div class="booking-fields"><label>Специальность<select id="patient-specialty" required></select></label>
+                        <label>Дата приёма<input id="patient-date" type="date" required></label></div>
+                    <fieldset><legend>Свободное время <small>по Москве</small></legend><div id="patient-times" class="time-options"></div></fieldset>
+                    <label>Врач<select id="patient-doctor" required></select></label>
+                    <label>Причина обращения<input id="patient-reason" maxlength="100" required placeholder="Например, плановый осмотр"></label>
+                    <div class="button-row"><button class="primary" type="submit">Подтвердить запись</button>
+                        <button class="secondary" type="button" data-open-visits>К моим записям</button></div>
+                </form>
+                <aside class="patient-panel booking-summary"><h2>Ваш выбор</h2><dl id="patient-selection"></dl></aside>
+            </div>
+        </section>
+        <section data-page="visits" hidden>
+            <div class="patient-section-head"><button class="primary" data-new-booking>+ Записаться</button><button id="patient-export" class="secondary">Скачать CSV</button></div>
+            <details id="patient-filters" class="patient-panel" open><summary>Поиск и фильтры</summary><div class="filter-grid">
+                <label>Поиск<input id="patient-search" type="search" placeholder="Врач или специальность"></label>
+                <label>Статус<select id="patient-status"><option value="">Все статусы</option></select></label>
+                <label>Дата с<input id="patient-from" type="date"></label><label>Дата по<input id="patient-to" type="date"></label>
+                <label>Сортировка<select id="patient-sort"><option value="starts-desc">По приёму, сначала поздние</option><option value="starts-asc">По приёму, сначала ранние</option><option value="created-desc">По созданию, сначала новые</option><option value="created-asc">По созданию, сначала старые</option></select></label>
+                <button id="patient-reset" class="text-action">Сбросить фильтры</button>
+            </div>
+            </details>
+            <p id="patient-count" class="muted" aria-live="polite"></p><div id="patient-visits"></div>
+        </section>
+        <section data-page="stats" hidden><h2>Мои приёмы</h2><div id="patient-metrics" class="patient-metrics"></div></section>
+    </main>
+    <dialog id="patient-confirm"><form method="dialog" class="dialog-form"><h2 id="patient-confirm-title"></h2><p id="patient-confirm-detail"></p>
+        <div class="button-row"><button class="secondary" value="back" autofocus>Назад</button><button id="patient-confirm-ok" class="danger-outline" value="confirm">Подтвердить</button></div></form></dialog>
 </section>
 
 <div id="app-view" class="app-shell" hidden>
@@ -177,6 +221,7 @@
 <dialog id="entity-dialog"><form id="entity-form" method="dialog" class="dialog-form"></form></dialog>
 <dialog id="notes-dialog"><div class="dialog-form wide"><div class="dialog-head"><h3>Заметки</h3><button data-close-dialog="notes-dialog" class="icon-button">×</button></div><div id="notes-list"></div><form id="note-form"><textarea id="note-body" maxlength="4000" required placeholder="Текст заметки"></textarea><label class="inline"><input id="note-pinned" type="checkbox"> Закрепить</label><button class="primary">Добавить заметку</button></form></div></dialog>
 <dialog id="csv-dialog"><div class="dialog-form wide"><div class="dialog-head"><h3>Импорт CSV</h3><button data-close-dialog="csv-dialog" class="icon-button">×</button></div><input id="csv-file" type="file" accept=".csv,text/csv"><label>Режим<select id="csv-mode"><option value="CREATE_ONLY">Только новые</option><option value="UPSERT_BY_EXTERNAL_ID">Обновить по externalId</option></select></label><div class="button-row"><button id="csv-preview" class="secondary">Проверить</button><button id="csv-apply" class="primary" disabled>Применить</button></div><pre id="csv-result" class="result-box"></pre></div></dialog>
+<script src="/patient.js" defer></script>
 <script src="/app.js?v=roles-phone-priority-v6" defer></script>
 </body>
 </html>

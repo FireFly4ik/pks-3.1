@@ -134,6 +134,15 @@ public class Appointment extends AuditedVersionedEntity {
     public void setPriorityLevel(PriorityLevel priorityLevel) { this.priorityLevel = priorityLevel; }
     public boolean isArchived() { return archived; }
     public void setArchived(boolean archived) { this.archived = archived; }
+    @Column(name = "reschedule_count", nullable = false, updatable = false)
+    private int rescheduleCount;
+
+    @Column(name = "patient_hidden", nullable = false)
+    private boolean patientHidden;
+
+    public int getRescheduleCount() { return rescheduleCount; }
+    public void hideFromPatient() { patientHidden = true; }
+
     public Instant getArchivedAt() { return archivedAt; }
     public void setArchivedAt(Instant archivedAt) { this.archivedAt = archivedAt; }
     public UserAccount getArchivedBy() { return archivedBy; }

@@ -80,5 +80,22 @@ class RegistrationTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
         mvc.perform(post("/api/patient/appointments").header("Authorization", tokens[1])
                 .contentType(MediaType.APPLICATION_JSON).content(booking)).andExpect(status().isConflict());
+
+        var list = mvc.perform(get("/api/patient/appointments").header("Authorization", tokens[0]))
+                .andReturn().getResponse();
+        var own = json.readTree(list.getContentAsByteArray()).get(0);
+        String endpoint = "/api/patient/appointments/" + own.get("id").asText();
+        long version = own.get("version").asLong();
+        mvc.perform(post(endpoint + "/cancel").param("version", String.valueOf(version))
+                .header("Authorization", tokens[1])).andExpect(status().isNotFound());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(endpoint)
+                .param("version", String.valueOf(version)).header("Authorization", tokens[1])
+                .contentType(MediaType.APPLICATION_JSON).content(booking)).andExpect(status().isNotFound());
+        mvc.perform(post(endpoint + "/cancel").param("version", String.valueOf(version + 1))
+                .header("Authorization", tokens[0])).andExpect(status().isConflict());
+        mvc.perform(post(endpoint + "/cancel").param("version", String.valueOf(version))
+                .header("Authorization", tokens[0])).andExpect(status().isNoContent());
+        mvc.perform(post("/api/patient/appointments").header("Authorization", tokens[1])
+                .contentType(MediaType.APPLICATION_JSON).content(booking)).andExpect(status().isCreated());
     }
 }

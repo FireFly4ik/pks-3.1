@@ -1,0 +1,69 @@
+.patient-shell {
+    --primary: #086956; --primary-dark: #064e42; --muted: #526b65; --line: #dbe5df;
+    background: #f5f7f3; color: #183e35; grid-template-columns: 244px minmax(0,1fr);
+}
+.patient-sidebar { background: #113e34; padding: 30px 18px 20px; gap: 36px; }
+.patient-sidebar .brand { gap: 12px; line-height: 1.3; }
+.patient-sidebar .brand small, .patient-sidebar .sidebar-footer small { color: #c0d8ce; font-weight: 450; }
+.clinic-mark { display: grid; place-content: center; width: 42px; height: 42px; background: #bce8cb; color: #135742; border-radius: 14px; font-size: 36px; font-weight: 700; line-height: 1; }
+#patient-navigation button { text-align: left; border: 0; color: #d2e3db; background: transparent; border-radius: 9px; padding: 12px 16px; font-weight: 600; }
+#patient-navigation button:hover, #patient-navigation button[aria-current="page"] { background: #27584a; color: #fff; }
+.patient-sidebar .sidebar-footer { padding: 18px 6px 0; border-top: 1px solid #407063; overflow-wrap: anywhere; }
+.patient-sidebar .sidebar-footer button { background: transparent; color: #f3faf5; border-color: #527b6a; }
+.patient-main { width: 100%; max-width: 1350px; padding: clamp(24px,4vw,64px); margin: 0 auto; min-width: 0; }
+.patient-top,.patient-section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.patient-top { margin-bottom: 32px; border-bottom: 1px solid var(--line); padding-bottom: 20px; }
+.patient-top p { margin: 0 0 5px; color: var(--muted); font-weight: 600; }
+.patient-top h1 { margin: 0; font-size: clamp(30px,4vw,46px); letter-spacing: -.045em; }
+.patient-top time { color: var(--muted); font-size: 14px; }
+.patient-main h2 { margin: 0; font-size: 22px; letter-spacing: -.025em; }
+.patient-section-head { margin: 26px 0 14px; }
+.next-visit { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: clamp(24px,4vw,42px); background: #e0efe3; border: 1px solid #c3dacb; border-radius: 22px; }
+.next-visit h2 { font-weight: 650; font-size: 16px; }
+#patient-next strong { display: block; font-size: clamp(23px,3vw,35px); letter-spacing: -.04em; margin: 10px 0; }
+#patient-next p { margin: 0 0 18px; }
+.date-sheet { min-width: 112px; background: #fcfdf8; border: 1px solid #bdd4c3; border-radius: 15px; text-align: center; overflow: hidden; box-shadow: 0 6px 0 #cddece; }
+.date-sheet small { display: block; padding: 7px 12px; background: #215d4b; color: white; }
+.date-sheet b { display: block; font-size: 44px; margin: 8px; }
+.patient-panel,.visit-card,.metric-tile,.patient-empty { background: white; border: 1px solid var(--line); border-radius: 15px; padding: 22px; }
+.booking-layout { display: grid; grid-template-columns: minmax(0,1.8fr) minmax(200px,1fr); gap: 18px; align-items: start; }
+#patient-book { display: grid; gap: 22px; }
+.booking-fields,.filter-grid,.patient-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.patient-shell label,.patient-shell legend { color: #31544a; font-size: 14px; }
+.patient-shell fieldset { padding: 0; border: 0; margin: 0; min-width: 0; }
+.patient-shell legend { font-weight: 650; margin-bottom: 8px; }
+.patient-shell legend small { font-weight: 400; }
+.time-options,.visit-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.time-options button,.text-action { border-radius: 8px; border: 1px solid var(--line); background: white; color: var(--primary); padding: 8px 12px; font-weight: 650; }
+.time-options button[aria-pressed="true"] { background: var(--primary); color: white; }
+.text-action { background: transparent; border-color: transparent; }
+.booking-summary dl { margin-bottom: 0; }
+.booking-summary dt { margin-top: 15px; font-size: 13px; color: var(--muted); }
+.booking-summary dd { margin: 3px 0; font-weight: 600; }
+.visit-card { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 9px; }
+.visit-card h3 { margin: 7px 0; font-size: 17px; }
+.visit-card p { margin: 5px 0; color: var(--muted); overflow-wrap: anywhere; }
+.visit-card time { font-weight: 700; }
+.visit-card .badge { margin-left: 8px; }
+.visit-card [data-status="UPCOMING"] { background: #daf0e2; color: #145a42; }
+.visit-card [data-status="IN_PROGRESS"] { background: #fff1cd; color: #755215; }
+.visit-actions button { font-size: 13px; }
+.filter-grid { grid-template-columns: repeat(3,minmax(0,1fr)); align-items: end; }
+.patient-empty { color: var(--muted); }
+.patient-metrics { margin-top: 14px; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); }
+.metric-tile strong { display: block; font-size: 36px; margin-top: 6px; }
+.portal-message { background: #e1eee7; border-radius: 10px; padding: 12px 16px; }
+.portal-message.error { background: #fff0ef; }
+@media(max-width:920px){.booking-layout{grid-template-columns:1fr}.patient-shell{grid-template-columns:206px minmax(0,1fr)}}
+@media(max-width:760px){.patient-shell{grid-template-columns:1fr}.patient-sidebar{gap:12px;padding:14px}.patient-sidebar nav{grid-template-columns:repeat(2,1fr)}.patient-sidebar .sidebar-footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:10px}.patient-sidebar .sidebar-footer small{display:none}.patient-sidebar .sidebar-footer button{font-size:12px}.patient-main{padding:20px 14px}.filter-grid,.booking-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.date-sheet{min-width:65px}.date-sheet b{font-size:30px}.next-visit{gap:10px;padding:18px}.visit-card{padding:15px}}
+
+#patient-menu { display: none; }
+#patient-filters summary { cursor: pointer; font-weight: 650; }
+#patient-filters[open] summary { margin-bottom: 15px; }
+@media(max-width:760px) {
+    .patient-sidebar { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+    #patient-menu { display: block; border: 1px solid #527b6a; background: transparent; color: white; border-radius: 8px; padding: 8px 14px; }
+    .patient-sidebar nav, .patient-sidebar .sidebar-footer { grid-column: 1 / -1; }
+    .patient-shell:not(.menu-open) #patient-navigation, .patient-shell:not(.menu-open) #patient-profile { display: none; }
+    .patient-top { margin-bottom: 18px; }
+}
