@@ -5,6 +5,7 @@ package ru.mirea.hospital.web.domain;
  * скрыл конкретный клиент.
  */
 public enum Role {
+    PATIENT,
     VIEWER,
     EDITOR,
     ADMIN

@@ -26,6 +26,7 @@ const canEdit = () => roles().has('EDITOR') || isAdmin();
  */
 function roleLabel(value) {
     return ({
+        PATIENT: 'Пациент',
         ADMIN: 'Администратор',
         EDITOR: 'Регистратор',
         VIEWER: 'Наблюдатель'
@@ -232,14 +233,9 @@ function showLogin() {
 
 async function enterApplication() {
     $('login-view').hidden = true;
-    const awaitingRole = state.user.roles.length === 0;
-    $('account-view').hidden = !awaitingRole;
-    $('app-view').hidden = awaitingRole;
-    if (awaitingRole) {
-        $('account-email').textContent = state.user.email;
-        return;
-    }
-
+    const patient = roles().has('PATIENT') && !canEdit() && !roles().has('VIEWER');
+    $('account-view').hidden = !patient;
+    $('app-view').hidden = patient;
     applyRoleVisibility();
     $('current-user').innerHTML = `<strong>${escapeHtml(state.user.displayName)}</strong><br>${escapeHtml(state.user.email)}<br>${escapeHtml(state.user.roles.map(roleLabel).join(', '))}`;
 
@@ -247,6 +243,11 @@ async function enterApplication() {
         toast('Для продолжения необходимо сменить временный пароль', true);
         const changed = await openPasswordDialog(true);
         if (!changed) return;
+    }
+
+    if (patient) {
+        await openPatientPortal();
+        return;
     }
 
     /*
@@ -259,6 +260,86 @@ async function enterApplication() {
         console.error('[Регистратура клиники] Initial data loading failed', error);
         toast(`Вход выполнен, но часть данных не загрузилась: ${error.message}`, true);
     }
+}
+
+async function openPatientPortal() {
+    const form = $('patient-book');
+    const specialty = $('patient-specialty');
+    const doctor = $('patient-doctor');
+    const date = $('patient-date');
+    const time = $('patient-slot');
+    const feedback = $('patient-feedback');
+    const owner = state.user.id;
+    const stillHere = () => state.user?.id === owner && !$('account-view').hidden;
+    $('account-email').textContent = state.user.email;
+    form.reset();
+    doctor.replaceChildren();
+    specialty.replaceChildren();
+    time.replaceChildren();
+    feedback.textContent = '';
+    $('patient-visits').textContent = 'Загрузка…';
+    const today = new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Moscow'}).format(new Date());
+    date.min = today;
+    const last = new Date(today + 'T00:00:00Z');
+    last.setUTCDate(last.getUTCDate() + 90);
+    date.max = last.toISOString().slice(0, 10);
+    date.value = today;
+
+    async function loadSlots() {
+        const day = date.value;
+        const id = doctor.value;
+        time.replaceChildren(new Option('Выберите дату и врача', ''));
+        if (!id || !day || !date.validity.valid) return;
+        try {
+            const slots = await api(`/patient/slots?doctorId=${encodeURIComponent(id)}&date=${encodeURIComponent(day)}`);
+            if (!stillHere() || doctor.value !== id || date.value !== day) return;
+            time.replaceChildren(new Option(slots.length ? 'Выберите время' : 'Свободного времени нет', ''),
+                ...slots.map(slot => new Option(slot.slice(11, 16), slot)));
+        } catch (error) { if (stillHere()) feedback.textContent = error.message; }
+    }
+
+    async function loadVisits() {
+        const visits = await api('/patient/appointments');
+        if (!stillHere()) return;
+        if (!visits.length) {
+            $('patient-visits').textContent = 'У вас пока нет записей.';
+            return;
+        }
+        const list = document.createElement('ul');
+        for (const visit of visits) {
+            const item = document.createElement('li');
+            item.textContent = `${formatDate(visit.startsAt)} · ${visit.specialty}, ${visit.doctor} · ${visit.reason} · ${statusLabel(visit.status)}`;
+            list.append(item);
+        }
+        $('patient-visits').replaceChildren(list);
+    }
+
+    form.onsubmit = async event => {
+        event.preventDefault();
+        const submit = form.querySelector('[type="submit"]');
+        submit.disabled = true;
+        try {
+            await api('/patient/appointments', {method: 'POST', body: JSON.stringify({
+                doctorId: doctor.value, startsAt: time.value, reason: form.elements.reason.value.trim()
+            })});
+            if (!stillHere()) return;
+            feedback.textContent = 'Вы записаны на приём.';
+            form.elements.reason.value = '';
+            await loadVisits();
+        } catch (error) { if (stillHere()) feedback.textContent = error.message; }
+        finally { submit.disabled = false; if (stillHere()) await loadSlots(); }
+    };
+    date.onchange = doctor.onchange = loadSlots;
+    try {
+        const [doctors] = await Promise.all([api('/patient/doctors'), loadVisits()]);
+        if (!stillHere()) return;
+        specialty.replaceChildren(...Array.from(new Set(doctors.map(d => d.specialty)), value => new Option(value, value)));
+        specialty.onchange = () => {
+            doctor.replaceChildren(...doctors.filter(d => d.specialty === specialty.value).map(d => new Option(d.name, d.id)));
+            return loadSlots();
+        };
+        await specialty.onchange();
+    } catch (error) { if (stillHere()) feedback.textContent = error.message; }
 }
 
 function applyRoleVisibility() {
@@ -511,7 +592,7 @@ function userForm(user = null) {
     <label>Email<input name="email" type="email" required maxlength="254" value="${escapeHtml(user?.email||'')}"></label>
     <label>Отображаемое имя<input name="displayName" required maxlength="160" value="${escapeHtml(user?.displayName||'')}"></label>
     ${user?'': '<label>Временный пароль<input name="temporaryPassword" type="password" required minlength="12" maxlength="128"></label>'}
-    <fieldset><legend>Роли</legend>${['VIEWER','EDITOR','ADMIN'].map(r=>`<label class="inline"><input type="checkbox" name="roles" value="${r}" ${checked(r)?'checked':''}> ${escapeHtml(roleLabel(r))}</label>`).join('')}</fieldset>
+    <fieldset><legend>Роли</legend>${['PATIENT','VIEWER','EDITOR','ADMIN'].map(r=>`<label class="inline"><input type="checkbox" name="roles" value="${r}" ${checked(r)?'checked':''}> ${escapeHtml(roleLabel(r))}</label>`).join('')}</fieldset>
     ${user?`<label class="inline"><input type="checkbox" name="enabled" ${user.enabled?'checked':''}> Активен</label>`:''}
     <button class="primary">Сохранить</button>`;
 }
@@ -638,7 +719,6 @@ function bindEvents() {
     const registration = $('register-form');
     $('open-register').onclick = () => {
         $('login-form').hidden = true;
-        $('registration-success').hidden = true;
         $('register-error').hidden = true;
         registration.hidden = false;
         registration.elements.displayName.focus();
@@ -665,14 +745,11 @@ function bindEvents() {
             });
             if (!response.ok) throw new Error(await parseError(response));
 
+            const session = await response.json();
+            state.accessToken = session.accessToken;
+            state.user = session.user;
             registration.reset();
-            registration.hidden = true;
-            $('login-form').hidden = false;
-            $('login-email').value = payload.email;
-            $('login-password').value = '';
-            $('login-error').hidden = true;
-            $('registration-success').hidden = false;
-            $('login-password').focus();
+            await enterApplication();
         } catch (failure) {
             error.textContent = failure.message;
             error.hidden = false;
@@ -687,7 +764,6 @@ function bindEvents() {
         const button = form.querySelector('button[type="submit"]');
         const errorNode = $('login-error');
 
-        $('registration-success').hidden = true;
         errorNode.hidden = true;
         button.disabled = true;
         const originalCaption = button.textContent;

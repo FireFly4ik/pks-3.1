@@ -24,7 +24,6 @@
         </label>
         <button class="primary" type="submit">Войти</button>
         <button type="button" id="open-register" class="secondary">Зарегистрироваться</button>
-        <p id="registration-success" role="status" hidden>Аккаунт создан. Войдите с вашим email и паролем.</p>
         <p id="login-error" class="error" hidden></p>
     </form>
     <form id="register-form" class="card login-card" hidden>
@@ -33,17 +32,27 @@
         <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
         <label>Пароль<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
         <small>От 12 символов, включая строчную и заглавную буквы, цифру и спецсимвол.</small>
-        <p>После регистрации можно сразу войти. Для работы с записями пациентов администратор назначает роль.</p>
+        <p>После регистрации откроется ваш личный кабинет пациента.</p>
         <button class="primary" type="submit">Создать аккаунт</button>
         <button id="back-to-login" class="secondary" type="button">Вернуться ко входу</button>
         <p id="register-error" role="alert" class="error" hidden></p>
     </form>
 </section>
-<section id="account-view" class="login-shell" hidden>
-    <div class="card login-card"><h1>Мой аккаунт</h1><p id="account-email"></p>
-        <p>Вы вошли. Для доступа к регистратуре попросите администратора назначить роль вашему аккаунту.</p>
+<section id="account-view" class="patient-portal" hidden>
+    <header class="topbar"><div><h1>Личный кабинет пациента</h1><p id="account-email"></p></div>
         <button id="account-logout" class="secondary">Выйти</button>
-    </div>
+    </header>
+    <form id="patient-book" class="card dialog-form">
+        <h2>Записаться на приём</h2>
+        <label>Специальность<select id="patient-specialty" required></select></label>
+        <label>Врач<select id="patient-doctor" required></select></label>
+        <label>Дата приёма<input id="patient-date" type="date" required></label>
+        <label>Свободное время по Москве<select id="patient-slot" required></select></label>
+        <label>Причина обращения<input name="reason" maxlength="100" required></label>
+        <button class="primary" type="submit">Записаться</button>
+        <p id="patient-feedback" role="status"></p>
+    </form>
+    <article class="card"><h2>Мои записи</h2><div id="patient-visits"></div></article>
 </section>
 
 <div id="app-view" class="app-shell" hidden>

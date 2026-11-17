@@ -72,7 +72,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
         passwordPolicy.validate(request.password(), email);
         if (users.existsByEmailIgnoreCase(email)) {
@@ -80,10 +80,11 @@ public class AuthService {
         }
 
         UserAccount account = new UserAccount(UUID.randomUUID(), email, request.displayName().trim(),
-                passwordEncoder.encode(request.password()), Set.of());
+                passwordEncoder.encode(request.password()), Set.of(ru.mirea.hospital.web.domain.Role.PATIENT));
         account.setPasswordChangeRequired(false);
-        users.saveAndFlush(account);
+        account = users.saveAndFlush(account);
         audit.record("USER_REGISTERED", "USER", account.getId(), "Самостоятельная регистрация", Map.of());
+        return issueSession(account);
     }
 
     /** Проверяет пароль и создаёт новую серверную сессию. */

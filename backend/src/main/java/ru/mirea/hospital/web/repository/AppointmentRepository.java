@@ -21,6 +21,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID>,
             "and (a.doctor.id = :doctor or a.patientLogin = :login)")
     boolean occupied(UUID excluded, java.time.LocalDateTime startsAt, UUID doctor, String login);
 
+    @Query(value = "select login from users where web_account_id = :account and active", nativeQuery = true)
+    Optional<String> patientLogin(UUID account);
+
+    List<Appointment> findByPatientLoginOrderByStartsAtDesc(String login);
+
+    @Query("select a.startsAt from Appointment a where a.startsAt >= :start and a.startsAt < :end " +
+            "and a.status <> ru.mirea.hospital.web.domain.AppointmentStatus.CANCELLED " +
+            "and (a.doctor.id = :doctor or a.patientLogin = :login)")
+    List<java.time.LocalDateTime> busy(UUID doctor, String login, java.time.LocalDateTime start, java.time.LocalDateTime end);
+
     boolean existsByExternalIdIgnoreCase(String externalId);
     boolean existsByExternalIdIgnoreCaseAndIdNot(String externalId, UUID id);
     Optional<Appointment> findByExternalIdIgnoreCase(String externalId);

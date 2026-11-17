@@ -137,3 +137,8 @@ dialog::backdrop { background: rgba(14,22,39,.56); backdrop-filter: blur(2px); }
     .form-grid .span-2 { grid-column: auto; }
     .search-wrap { min-width: 100%; flex-direction: column; }
 }
+
+.patient-portal { max-width: 860px; margin: 0 auto; padding: 24px; }
+.patient-portal .card { margin: 18px 0; padding: 24px; }
+.patient-portal ul { padding-inline-start: 20px; }
+.patient-portal li { margin: 10px 0; }

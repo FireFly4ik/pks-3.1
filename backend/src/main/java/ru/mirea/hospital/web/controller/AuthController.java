@@ -43,9 +43,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
-        auth.register(request);
-        return ResponseEntity.status(201).build();
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
+        AuthResponse session = auth.register(request);
+        setRefreshCookie(response, session.refreshToken(), session.refreshExpiresAt());
+        syncSwaggerCookie(response, session);
+        return ResponseEntity.status(201).body(withoutRefreshToken(session));
     }
 
     /** В web-режиме помещает refresh-токен только в HttpOnly cookie. */
