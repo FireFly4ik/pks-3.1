@@ -56,7 +56,7 @@ public class SecurityConfig {
                                 "/error",
                                 "/errors/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").hasRole("ADMIN")
                         .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
 

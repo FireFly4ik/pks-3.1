@@ -23,8 +23,27 @@
             <input id="login-password" type="password" autocomplete="current-password" required maxlength="128">
         </label>
         <button class="primary" type="submit">Войти</button>
+        <button type="button" id="open-register" class="secondary">Зарегистрироваться</button>
+        <p id="registration-success" role="status" hidden>Аккаунт создан. Войдите с вашим email и паролем.</p>
         <p id="login-error" class="error" hidden></p>
     </form>
+    <form id="register-form" class="card login-card" hidden>
+        <h1>Регистрация</h1>
+        <label>Имя или ФИО<input name="displayName" autocomplete="name" maxlength="160" required></label>
+        <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+        <label>Пароль<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+        <small>От 12 символов, включая строчную и заглавную буквы, цифру и спецсимвол.</small>
+        <p>После регистрации можно сразу войти. Для работы с записями пациентов администратор назначает роль.</p>
+        <button class="primary" type="submit">Создать аккаунт</button>
+        <button id="back-to-login" class="secondary" type="button">Вернуться ко входу</button>
+        <p id="register-error" role="alert" class="error" hidden></p>
+    </form>
+</section>
+<section id="account-view" class="login-shell" hidden>
+    <div class="card login-card"><h1>Мой аккаунт</h1><p id="account-email"></p>
+        <p>Вы вошли. Для доступа к регистратуре попросите администратора назначить роль вашему аккаунту.</p>
+        <button id="account-logout" class="secondary">Выйти</button>
+    </div>
 </section>
 
 <div id="app-view" class="app-shell" hidden>

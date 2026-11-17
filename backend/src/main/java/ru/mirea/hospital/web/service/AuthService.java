@@ -30,6 +30,9 @@ import java.util.HexFormat;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Set;
+import ru.mirea.hospital.web.dto.AuthDtos.RegisterRequest;
+import ru.mirea.hospital.web.error.ConflictException;
 
 /**
  * Выполняет вход, ротацию refresh-токена, выход и смену пароля.
@@ -66,6 +69,21 @@ public class AuthService {
         this.audit = audit;
         // Валидный BCrypt-хеш используется и для неизвестного email, чтобы время проверки было сопоставимым.
         this.dummyHash = passwordEncoder.encode("constant-dummy-password-never-used");
+    }
+
+    @Transactional
+    public void register(RegisterRequest request) {
+        String email = normalizeEmail(request.email());
+        passwordPolicy.validate(request.password(), email);
+        if (users.existsByEmailIgnoreCase(email)) {
+            throw new ConflictException("Этот email уже зарегистрирован. Войдите в аккаунт.");
+        }
+
+        UserAccount account = new UserAccount(UUID.randomUUID(), email, request.displayName().trim(),
+                passwordEncoder.encode(request.password()), Set.of());
+        account.setPasswordChangeRequired(false);
+        users.saveAndFlush(account);
+        audit.record("USER_REGISTERED", "USER", account.getId(), "Самостоятельная регистрация", Map.of());
     }
 
     /** Проверяет пароль и создаёт новую серверную сессию. */

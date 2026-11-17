@@ -1,5 +1,6 @@
 package ru.mirea.hospital.web.controller;
 
+import ru.mirea.hospital.web.dto.AuthDtos.RegisterRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,6 +40,12 @@ public class AuthController {
     public AuthController(AuthService auth, AppProperties properties) {
         this.auth = auth;
         this.properties = properties;
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
+        auth.register(request);
+        return ResponseEntity.status(201).build();
     }
 
     /** В web-режиме помещает refresh-токен только в HttpOnly cookie. */

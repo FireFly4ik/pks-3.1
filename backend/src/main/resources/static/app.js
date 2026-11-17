@@ -221,6 +221,9 @@ async function boot() {
 }
 
 function showLogin() {
+    $('account-view').hidden = true;
+    $('register-form').hidden = true;
+    $('login-form').hidden = false;
     $('app-view').hidden = true;
     $('login-view').hidden = false;
     state.accessToken = null;
@@ -229,7 +232,14 @@ function showLogin() {
 
 async function enterApplication() {
     $('login-view').hidden = true;
-    $('app-view').hidden = false;
+    const awaitingRole = state.user.roles.length === 0;
+    $('account-view').hidden = !awaitingRole;
+    $('app-view').hidden = awaitingRole;
+    if (awaitingRole) {
+        $('account-email').textContent = state.user.email;
+        return;
+    }
+
     applyRoleVisibility();
     $('current-user').innerHTML = `<strong>${escapeHtml(state.user.displayName)}</strong><br>${escapeHtml(state.user.email)}<br>${escapeHtml(state.user.roles.map(roleLabel).join(', '))}`;
 
@@ -625,6 +635,51 @@ async function logout() {
 }
 
 function bindEvents() {
+    const registration = $('register-form');
+    $('open-register').onclick = () => {
+        $('login-form').hidden = true;
+        $('registration-success').hidden = true;
+        $('register-error').hidden = true;
+        registration.hidden = false;
+        registration.elements.displayName.focus();
+    };
+    $('back-to-login').onclick = () => {
+        registration.reset();
+        registration.hidden = true;
+        $('login-form').hidden = false;
+        $('login-email').focus();
+    };
+    $('account-logout').onclick = logout;
+    registration.onsubmit = async event => {
+        event.preventDefault();
+        const button = registration.querySelector('[type="submit"]');
+        const back = $('back-to-login');
+        const error = $('register-error');
+        const payload = Object.fromEntries(new FormData(registration));
+        payload.email = payload.email.trim();
+        button.disabled = back.disabled = true;
+        error.hidden = true;
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+            });
+            if (!response.ok) throw new Error(await parseError(response));
+
+            registration.reset();
+            registration.hidden = true;
+            $('login-form').hidden = false;
+            $('login-email').value = payload.email;
+            $('login-password').value = '';
+            $('login-error').hidden = true;
+            $('registration-success').hidden = false;
+            $('login-password').focus();
+        } catch (failure) {
+            error.textContent = failure.message;
+            error.hidden = false;
+        } finally {
+            button.disabled = back.disabled = false;
+        }
+    };
     $('login-form').addEventListener('submit', async event => {
         event.preventDefault();
 
@@ -632,6 +687,7 @@ function bindEvents() {
         const button = form.querySelector('button[type="submit"]');
         const errorNode = $('login-error');
 
+        $('registration-success').hidden = true;
         errorNode.hidden = true;
         button.disabled = true;
         const originalCaption = button.textContent;

@@ -17,6 +17,12 @@ public final class AuthDtos {
     /** Тип клиента определяет способ доставки refresh-токена. */
     public enum ClientType { WEB, NATIVE }
 
+    public record RegisterRequest(
+            @NotBlank @Size(max = 160) String displayName,
+            @NotBlank @Email @Size(max = 254) String email,
+            @NotBlank @Size(max = 128) String password) {
+    }
+
     /** Запрос входа. */
     public record LoginRequest(
             @NotBlank @Email @Size(max = 254) String email,
