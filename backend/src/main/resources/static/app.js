@@ -171,7 +171,7 @@ async function parseError(response) {
                 .join('; ')
             : '';
 
-        const message = `${body.message || response.statusText}${fields ? ` — ${fields}` : ''}${body.correlationId ? ` [${body.correlationId}]` : ''}`;
+        const message = `${body.message || response.statusText}${fields ? ` — ${fields}` : ''}`;
         return normalizeAfterColon(message);
     } catch (_) {
         return `${response.status} ${response.statusText}`;
@@ -316,7 +316,7 @@ function renderBars(id, values) {
 }
 
 async function loadDoctors() {
-    try { state.doctors = await api('/doctors?activeOnly=false'); renderDoctors(); }
+    try { state.doctors = await api('/doctors?activeOnly=false'); renderDoctors(); renderDoctorFilter(); }
     catch (error) { toast(error.message, true); }
 }
 
@@ -342,6 +342,49 @@ function renderDoctors() {
     applyRoleVisibility();
 }
 
+function renderDoctorFilter() {
+    const select = $('filter-doctor');
+    const previous = select.value;
+    select.replaceChildren(new Option('Все врачи', ''));
+    for (const doctor of state.doctors) {
+        const label = [doctor.name || doctor.code, doctor.specialty].filter(Boolean).join(' · ');
+        select.add(new Option(label + (doctor.active ? '' : ' (отключён)'), doctor.code));
+    }
+    select.value = [...select.options].some(option => option.value === previous) ? previous : '';
+}
+
+function buildAppointmentQuery() {
+    // The parser accepts quoted whole tokens, including tags containing spaces.
+    const quote = value => '"' + value.replace(/"/g, ' ') + '"';
+    const parts = [$('appointment-search').value.trim()];
+    for (const [id, key] of [['filter-doctor','doctor'], ['filter-status','status'],
+        ['filter-priority','priority'], ['filter-call','callback'], ['filter-tag','tag'], ['filter-archive','archived']]) {
+        const value = $(id).value.trim();
+        if (value) parts.push(quote(key + ':' + value));
+    }
+    const readiness = $('filter-readiness');
+    if (!readiness.checkValidity()) { readiness.reportValidity(); return null; }
+    if (readiness.value !== '') parts.push('readiness' + $('filter-op').value + Number(readiness.value).toFixed(2));
+    const query = parts.filter(Boolean).join(' ');
+    if (query.length > 500) { toast('Строка фильтра слишком длинная', true); return null; }
+    return query;
+}
+
+function applyAppointmentFilters() {
+    const query = buildAppointmentQuery();
+    if (query === null) return;
+    state.appointments.query = query;
+    state.appointments.page = 0;
+    loadAppointments(0);
+}
+
+function resetAppointmentFilters() {
+    for (const id of ['appointment-search','filter-doctor','filter-status','filter-priority','filter-call','filter-tag','filter-readiness']) $(id).value = '';
+    $('filter-op').value = '<';
+    $('filter-archive').value = 'no';
+    applyAppointmentFilters();
+}
+
 async function loadAppointments(page = state.appointments.page) {
     try {
         const q = encodeURIComponent(state.appointments.query);
@@ -355,8 +398,8 @@ async function loadAppointments(page = state.appointments.page) {
 function renderAppointments() {
     $('appointments-body').innerHTML = state.appointments.content.map(appointment => `<tr class="${appointment.archived ? 'archived' : ''}">
         <td class="editor-only"><input type="checkbox" data-appointment-select="${appointment.id}"></td>
-        <td><strong>${escapeHtml(appointment.reason)}</strong><br><small class="muted">${escapeHtml(appointment.patientLogin)} · ${formatDate(appointment.startsAt)} · ${escapeHtml(appointment.externalId || '')}</small></td>
-        <td>${escapeHtml(appointment.doctorCode || '—')}</td><td><span class="badge" data-status="${escapeHtml(appointment.status)}">${escapeHtml(statusLabel(appointment.status))}</span></td>
+        <td><strong>${escapeHtml(appointment.reason)}</strong><br><small class="muted">${escapeHtml(appointment.patientAccountEmail || appointment.patientLogin)} · ${formatDate(appointment.startsAt)} · ${escapeHtml(appointment.externalId || '')}</small></td>
+        <td>${escapeHtml(appointment.doctorName || appointment.doctorCode || '—')}</td><td><span class="badge" data-status="${escapeHtml(appointment.status)}">${escapeHtml(statusLabel(appointment.status))}</span></td>
         <td>${appointment.readiness ?? '—'}</td><td>${appointment.needsCall ? '<span class="badge warning">Да</span>' : 'Нет'}</td>
         <td><span class="badge priority-${appointment.priorityLevel}">${escapeHtml(priorityLabel(appointment.priorityLevel))}</span></td>
         <td>${appointment.tags.map(tag => `<span class="badge">${escapeHtml(tag)}</span>`).join(' ') || '—'}</td>
@@ -375,11 +418,11 @@ function renderAppointments() {
 }
 
 function appointmentForm(appointment = null, readOnly = false) {
-    const doctorOptions = ['<option value="">Выберите врача</option>', ...state.doctors.filter(g => g.active || g.id === appointment?.doctorId).map(g => `<option value="${g.id}" ${g.id === appointment?.doctorId ? 'selected' : ''}>${escapeHtml(g.code + ' · ' + g.name + ' · ' + g.specialty)}</option>`)].join('');
+    const doctorOptions = ['<option value="">Выберите врача</option>', ...state.doctors.filter(g => g.active || g.id === appointment?.doctorId).map(g => `<option value="${g.id}" ${g.id === appointment?.doctorId ? 'selected' : ''}>${escapeHtml(g.name + ' · ' + g.specialty)}</option>`)].join('');
     return `<div class="dialog-head"><h3>${appointment ? (readOnly ? 'Карточка приёма' : 'Изменение приёма') : 'Новый приём'}</h3><button type="button" data-close-dialog="entity-dialog" class="icon-button">×</button></div>
     <div class="form-grid">
       <label>Причина обращения<input name="reason" required maxlength="100" value="${escapeHtml(appointment?.reason || '')}" ${readOnly?'disabled':''}></label>
-      <label>Логин пациента<input name="patientLogin" required maxlength="100" value="${escapeHtml(appointment?.patientLogin || '')}" ${readOnly?'disabled':''}></label>
+      <label>ФИО пациента<input name="patientLogin" required maxlength="100" value="${escapeHtml(appointment?.patientAccountEmail || appointment?.patientLogin || '')}" ${readOnly?'disabled':appointment?.patientAccountEmail?'readonly':''}></label>
       <label>Комментарий<input name="details" maxlength="100" value="${escapeHtml(appointment?.details || '')}" ${readOnly?'disabled':''}></label>
       <label>Код записи<input name="externalId" required maxlength="100" value="${escapeHtml(appointment?.externalId || '')}" ${readOnly?'disabled':''}></label>
       <label>Email<input name="email" type="email" maxlength="254" value="${escapeHtml(appointment?.email || '')}" ${readOnly?'disabled':''}></label>
@@ -416,7 +459,7 @@ async function openAppointment(id = null, readOnly = false) {
 
         const data = new FormData(form);
         const payload = {
-            externalId: empty(data.get('externalId')), patientLogin: data.get('patientLogin'), reason: data.get('reason'), details: empty(data.get('details')),
+            externalId: empty(data.get('externalId')), patientLogin: appointment?.patientAccountEmail ? appointment.patientLogin : data.get('patientLogin'), reason: data.get('reason'), details: empty(data.get('details')),
             email: empty(data.get('email')), phone: empty(data.get('phone')), startsAt: empty(data.get('startsAt')),
             doctorId: empty(data.get('doctorId')), status: data.get('status'), readiness: empty(data.get('readiness')) ? Number(data.get('readiness')) : null,
             needsCall: data.get('needsCall') === 'on', tags: String(data.get('tags') || '').split(',').map(v => v.trim()).filter(Boolean), version: appointment?.version ?? null
@@ -748,7 +791,9 @@ function bindEvents() {
     $('navigation').addEventListener('click',event=>{const button=event.target.closest('[data-tab]');if(button&&!button.hidden)switchTab(button.dataset.tab);});
     $('logout').addEventListener('click',logout); $('change-password').addEventListener('click',()=>openPasswordDialog(false));
     $('visit-sort').addEventListener('change', () => loadAppointments(0));
-    $('search-appointments').addEventListener('click',()=>{state.appointments.query=$('appointment-search').value.trim();state.appointments.page=0;loadAppointments(0);});
+    $('search-appointments').addEventListener('click',applyAppointmentFilters);
+    $('apply-filters').addEventListener('click',applyAppointmentFilters);
+    $('reset-filters').addEventListener('click',resetAppointmentFilters);
     $('appointment-search').addEventListener('keydown',event=>{if(event.key==='Enter')$('search-appointments').click();});
     $('appointments-prev').addEventListener('click',()=>loadAppointments(state.appointments.page-1)); $('appointments-next').addEventListener('click',()=>loadAppointments(state.appointments.page+1));
     $('add-appointment').addEventListener('click',()=>openAppointment()); $('bulk-action').addEventListener('click',bulkAction); $('export-csv').addEventListener('click',exportCsv);

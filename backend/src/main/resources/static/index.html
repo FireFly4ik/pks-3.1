@@ -81,6 +81,7 @@
                     <fieldset><legend>Свободное время <small>по Москве</small></legend><div id="patient-times" class="time-options"></div></fieldset>
                     <label>Врач<select id="patient-doctor" required></select></label>
                     <label>Причина обращения<input id="patient-reason" maxlength="100" required placeholder="Например, плановый осмотр"></label>
+                    <label class="inline"><input type="checkbox" id="patient-needs-call"> Прошу связаться со мной перед приёмом</label>
                     <div class="button-row"><button class="primary" type="submit">Подтвердить запись</button>
                         <button class="secondary" type="button" data-open-visits>К моим записям</button></div>
                 </form>
@@ -158,7 +159,7 @@
             <div class="toolbar card">
                 <div class="search-wrap">
                     <input id="appointment-search" type="search" aria-label="Поиск записей" maxlength="500"
-                           placeholder="Иванов врач:DOC-1 готовность<60 звонок:да приоритет:высокий">
+                           placeholder="Поиск по пациенту, врачу, причине приёма">
                     <select id="visit-sort" aria-label="Сортировка"><option value="startsAt,asc">По времени приёма ↑</option><option value="startsAt,desc">По времени приёма ↓</option><option value="created,desc">Сначала новые записи</option><option value="patientLogin,asc">По логину пациента</option><option value="created,asc">Сначала старые записи</option></select>
                     <button id="search-appointments" class="primary">Найти</button>
                 </div>
@@ -168,9 +169,18 @@
                     <button id="import-csv" class="secondary">Импорт CSV</button>
                     <button id="export-csv" class="secondary">Экспорт CSV</button>
                 </div>
-                <details class="filter-help">
-                    <summary>Подсказка по умному фильтру</summary>
-                    <code>врач:DOC-1 статус:предстоит звонок:да готовность&lt;60 приоритет:высокий тег:контроль архив:все</code>
+                <details class="filter-help appointment-filters">
+                    <summary>Фильтры</summary>
+                    <div class="appointment-filter-grid">
+                        <label>Врач<select id="filter-doctor"><option value="">Все врачи</option></select></label>
+                        <label>Статус<select id="filter-status"><option value="">Все статусы</option><option value="upcoming">Предстоящая</option><option value="in_progress">В процессе</option><option value="completed">Завершена</option><option value="cancelled">Отменена</option></select></label>
+                        <label>Приоритет<select id="filter-priority"><option value="">Любой</option><option value="low">Низкий</option><option value="medium">Средний</option><option value="high">Высокий</option><option value="critical">Критический</option><option value="not_applicable">Не применяется</option></select></label>
+                        <label>Нужен звонок<select id="filter-call"><option value="">Неважно</option><option value="yes">Да</option><option value="no">Нет</option></select></label>
+                        <div><label for="filter-readiness">Готовность, %</label><div class="readiness-filter"><select id="filter-op" aria-label="Оператор сравнения"><option value="&lt;">&lt;</option><option value="&lt;=">≤</option><option value="=">=</option><option value="&gt;=">≥</option><option value="&gt;">&gt;</option></select><input id="filter-readiness" type="number" min="0" max="100" step="0.01" placeholder="0–100"></div></div>
+                        <label>Архив<select id="filter-archive"><option value="no">Только активные</option><option value="yes">Только архивные</option><option value="all">Все записи</option></select></label>
+                        <label>Тег<input id="filter-tag" type="text" maxlength="100" placeholder="Название тега"></label>
+                    </div>
+                    <div class="toolbar-actions"><button id="apply-filters" type="button" class="primary">Применить</button><button id="reset-filters" type="button" class="secondary">Сбросить</button></div>
                 </details>
             </div>
             <div class="card table-card">

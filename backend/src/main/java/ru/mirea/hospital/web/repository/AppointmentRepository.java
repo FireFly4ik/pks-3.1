@@ -44,8 +44,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID>,
     @Query("select coalesce(avg(s.readiness), 0) from Appointment s where s.archived = false and s.readiness is not null")
     BigDecimal readinessForActive();
 
-    @Query("select coalesce(g.code, 'Без врача'), count(s) from Appointment s left join s.doctor g " +
-           "where s.archived = false group by g.code order by count(s) desc")
+    @Query("select coalesce(g.name, 'Без врача'), count(s) from Appointment s left join s.doctor g " +
+           "where s.archived = false group by g.name, g.id order by count(s) desc")
     List<Object[]> countActiveByDoctor();
 
     @Query("select s.status, count(s) from Appointment s where s.archived = false group by s.status order by count(s) desc")

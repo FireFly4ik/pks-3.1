@@ -159,7 +159,7 @@ public class AppointmentService {
                 transaction.executeWithoutResult(tx -> applyBulk(require(id), request, currentUser.requireEntity()));
                 succeeded++;
             } catch (RuntimeException ex) {
-                failures.add(new BulkFailure(id, ex instanceof NotFoundException ? "Приём не найден" : "Изменение конфликтует с текущими данными"));
+                failures.add(new BulkFailure(id, ex instanceof NotFoundException || ex instanceof BadRequestException ? ex.getMessage() : "Изменение конфликтует с текущими данными"));
             }
         }
         audit.record("APPOINTMENT_BULK_" + request.action().name(), "APPOINTMENT", null,
@@ -199,6 +199,7 @@ public class AppointmentService {
 
     void validateBooking(Appointment existing, AppointmentRequest request) {
         var starts = request.startsAt();
+        AppointmentStatusPolicy.validate(existing, request.status(), starts);
         if (existing == null || !starts.equals(existing.getStartsAt())) {
             var now = java.time.LocalDateTime.now(java.time.ZoneId.of("Europe/Moscow"));
             if (!starts.isAfter(now) || starts.toLocalDate().isAfter(now.toLocalDate().plusDays(90))) {
@@ -230,6 +231,7 @@ public class AppointmentService {
                 appointment.setUpdatedBy(actor);
             }
             case SET_STATUS -> {
+                AppointmentStatusPolicy.validate(appointment, request.status(), appointment.getStartsAt());
                 appointment.setStatus(request.status());
                 appointment.setPriorityLevel(priorityCalculator.calculate(appointment.getStatus(), appointment.getReadiness(), appointment.isNeedsCall()));
                 appointment.setUpdatedBy(actor);

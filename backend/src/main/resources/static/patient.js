@@ -25,7 +25,7 @@ async function openPatientPortal() {
         screen = name;
         portal.classList.remove('menu-open');
         $('patient-menu').setAttribute('aria-expanded', 'false');
-        $('patient-title').textContent = name === 'booking' && moving ? 'Перенести приём' : titles[name];
+        $('patient-title').textContent = name === 'booking' && moving ? 'Изменить запись' : titles[name];
         portal.querySelectorAll('[data-page]').forEach(section => section.hidden = section.dataset.page !== name);
         portal.querySelectorAll('[data-screen]').forEach(button => {
             if (button.dataset.screen === name) button.setAttribute('aria-current', 'page');
@@ -37,13 +37,14 @@ async function openPatientPortal() {
         const historical = ['CANCELLED','COMPLETED'].includes(v.status);
         let actions = '';
         if (v.status === 'UPCOMING') {
-            actions = '<button class="secondary" data-action="move">Перенести</button><button class="danger-outline" data-action="cancel">Отменить</button>';
+            actions = '<button class="secondary" data-action="move">Изменить</button><button class="danger-outline" data-action="cancel">Отменить</button>';
         } else if (historical) {
             actions = '<button class="text-action" data-action="hide">Убрать из истории</button>';
         }
         return `<article class="visit-card" data-id="${escapeHtml(v.id)}"><div>
             <time>${escapeHtml(when(v.startsAt))}</time><span class="badge" data-status="${escapeHtml(v.status)}">${escapeHtml(statusLabel(v.status))}</span>
             <h3>${escapeHtml(v.specialty)} · ${escapeHtml(v.doctor)}</h3><p>${escapeHtml(v.reason)}</p>
+            ${v.needsCall ? '<p>Запрошен звонок</p>' : ''}
             ${v.rescheduleCount ? `<small>Переносов: ${v.rescheduleCount}</small>` : ''}</div>
             <div class="visit-actions">${actions}</div></article>`;
     }
@@ -114,7 +115,6 @@ async function openPatientPortal() {
             if (!stillHere() || request !== slotRequest) return;
             for (const [d, slots] of results) {
                 for (const value of slots) {
-                    if (moving && moving.doctorId === d.id && moving.startsAt === value) continue;
                     if (!matchingSlots.has(value)) matchingSlots.set(value, []);
                     matchingSlots.get(value).push(d);
                 }
@@ -132,6 +132,11 @@ async function openPatientPortal() {
                     selection();
                 };
                 times.append(button);
+                if (moving && moving.startsAt === value && matchingSlots.get(value).some(d => d.id === moving.doctorId)) {
+                    button.click();
+                    doctor.value = moving.doctorId;
+                    selection();
+                }
             }
             if (!matchingSlots.size) times.textContent = 'Свободного времени нет. Выберите другой день.';
         } catch (error) {
@@ -148,8 +153,9 @@ async function openPatientPortal() {
         date.value = visit?.startsAt.slice(0,10) || first.toISOString().slice(0,10);
         if (visit && doctors.some(d => d.specialty === visit.specialty)) specialty.value = visit.specialty;
         $('patient-reason').value = visit?.reason || '';
-        $('booking-title').textContent = visit ? 'Новое время приёма' : 'Выберите приём';
-        form.querySelector('[type="submit"]').textContent = visit ? 'Подтвердить перенос' : 'Подтвердить запись';
+        $('patient-needs-call').checked = Boolean(visit?.needsCall);
+        $('booking-title').textContent = visit ? 'Редактирование записи' : 'Выберите приём';
+        form.querySelector('[type="submit"]').textContent = visit ? 'Сохранить изменения' : 'Подтвердить запись';
         loadSlots();
     }
 
@@ -199,13 +205,13 @@ async function openPatientPortal() {
         const previous = moving;
         try {
             await api(previous ? `/patient/appointments/${previous.id}?version=${previous.version}` : '/patient/appointments', {
-                method: previous ? 'PUT' : 'POST', body: JSON.stringify({doctorId: doctor.value, startsAt: slot, reason: $('patient-reason').value.trim()})
+                method: previous ? 'PUT' : 'POST', body: JSON.stringify({doctorId: doctor.value, startsAt: slot, reason: $('patient-reason').value.trim(), needsCall: $('patient-needs-call').checked})
             });
             if (!stillHere()) return;
             moving = null;
             resetFilters();
             show('visits');
-            message(previous ? 'Приём перенесён.' : 'Вы записаны на приём.');
+            message(previous ? 'Изменения сохранены.' : 'Вы записаны на приём.');
             await refreshVisits();
         } catch (error) {
             message(error.message, true);

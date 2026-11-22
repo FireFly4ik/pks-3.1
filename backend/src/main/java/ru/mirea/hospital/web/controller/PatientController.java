@@ -51,10 +51,10 @@ public class PatientController {
     }
 
     public record Booking(@NotNull UUID doctorId, @NotNull LocalDateTime startsAt,
-                          @NotBlank @Size(max = 100) String reason) {}
+                          @NotBlank @Size(max = 100) String reason, Boolean needsCall) {}
     public record Visit(UUID id, LocalDateTime startsAt, String doctor, String specialty,
                         String reason, AppointmentStatus status, UUID doctorId, Instant createdAt,
-                        int rescheduleCount, long version) {}
+                        int rescheduleCount, long version, boolean needsCall) {}
 
     private String patientLogin() {
         return visits.patientLogin(current.requirePrincipal().id())
@@ -91,8 +91,8 @@ public class PatientController {
     public List<Visit> list() {
         return visits.findByPatientLoginAndPatientHiddenFalseOrderByStartsAtDesc(patientLogin()).stream().map(a ->
                 new Visit(a.getId(), a.getStartsAt(), a.getDoctor().getName(), a.getDoctor().getSpecialty(),
-                        a.getReason(), effectiveStatus(a), a.getDoctor().getId(), a.getCreatedAt(),
-                        a.getRescheduleCount(), a.getVersion())).toList();
+                        a.getReason(), ru.mirea.hospital.web.service.AppointmentStatusPolicy.effective(a), a.getDoctor().getId(), a.getCreatedAt(),
+                        a.getRescheduleCount(), a.getVersion(), a.isNeedsCall())).toList();
     }
 
     @PostMapping("/appointments")
@@ -101,8 +101,8 @@ public class PatientController {
     public UUID book(@Valid @RequestBody Booking request) {
         String login = patientLogin();
         return appointments.create(new AppointmentRequest("WEB-" + UUID.randomUUID(), login, request.reason(),
-                null, null, null, request.startsAt(), request.doctorId(), AppointmentStatus.UPCOMING,
-                null, false, Set.of(), null)).id();
+                null, current.requireEntity().getEmail(), null, request.startsAt(), request.doctorId(), AppointmentStatus.UPCOMING,
+                null, Boolean.TRUE.equals(request.needsCall()), Set.of(), null)).id();
     }
 
     private Appointment own(UUID id, String login) {
@@ -110,20 +110,10 @@ public class PatientController {
                 .orElseThrow(() -> new NotFoundException("Запись не найдена"));
     }
 
-    private static AppointmentStatus effectiveStatus(Appointment a) {
-        if (a.getStatus() == AppointmentStatus.CANCELLED || a.getStatus() == AppointmentStatus.COMPLETED) {
-            return a.getStatus();
-        }
-        var now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));
-        if (!a.getStartsAt().plusMinutes(30).isAfter(now)) return AppointmentStatus.COMPLETED;
-        if (!a.getStartsAt().isAfter(now)) return AppointmentStatus.IN_PROGRESS;
-        return a.getStatus();
-    }
-
     private Appointment upcoming(UUID id, long version) {
         var appointment = own(id, patientLogin());
         if (appointment.getVersion() != version) throw new ConflictException("Запись изменилась. Обновите список.");
-        if (effectiveStatus(appointment) != AppointmentStatus.UPCOMING) {
+        if (ru.mirea.hospital.web.service.AppointmentStatusPolicy.effective(appointment) != AppointmentStatus.UPCOMING) {
             throw new ConflictException("Изменить можно только предстоящую запись");
         }
         return appointment;
@@ -134,12 +124,9 @@ public class PatientController {
     @Transactional
     public void move(@PathVariable UUID id, @RequestParam long version, @Valid @RequestBody Booking request) {
         var a = upcoming(id, version);
-        if (a.getDoctor().getId().equals(request.doctorId()) && a.getStartsAt().equals(request.startsAt())) {
-            throw new BadRequestException("Выберите другое время или врача");
-        }
         appointments.update(id, new AppointmentRequest(a.getExternalId(), a.getPatientLogin(), request.reason(),
-                a.getDetails(), a.getEmail(), a.getPhone(), request.startsAt(), request.doctorId(), a.getStatus(),
-                a.getReadiness(), a.isNeedsCall(), Set.copyOf(a.getTags()), version));
+                a.getDetails(), a.getEmail(), a.getPhone(), request.startsAt(), request.doctorId(), AppointmentStatus.UPCOMING,
+                a.getReadiness(), request.needsCall() == null ? a.isNeedsCall() : request.needsCall(), Set.copyOf(a.getTags()), version));
     }
 
     @PostMapping("/appointments/{id}/cancel")
@@ -160,7 +147,7 @@ public class PatientController {
     public void hide(@PathVariable UUID id, @RequestParam long version) {
         var a = own(id, patientLogin());
         if (a.getVersion() != version) throw new ConflictException("Запись изменилась. Обновите список.");
-        var status = effectiveStatus(a);
+        var status = ru.mirea.hospital.web.service.AppointmentStatusPolicy.effective(a);
         if (status != AppointmentStatus.COMPLETED && status != AppointmentStatus.CANCELLED) {
             throw new ConflictException("Можно убрать только завершённую или отменённую запись");
         }

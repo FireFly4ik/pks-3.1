@@ -218,3 +218,10 @@ dialog::backdrop { background: #102e26a8; }
 .badge[data-status="UPCOMING"] { background: #daf0e2; color: #145a42; }
 .badge[data-status="IN_PROGRESS"] { background: #fff1cd; color: #755215; }
 .badge[data-status="CANCELLED"] { background: #fae8e8; color: #913743; }
+
+/* Structured appointment filters */
+.appointment-filters { width: 100%; }
+.appointment-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 12px; margin: 14px 0; }
+.appointment-filter-grid label { display: flex; flex-direction: column; gap: 6px; }
+.appointment-filter-grid input, .appointment-filter-grid select { width: 100%; min-width: 0; }
+.readiness-filter { display: grid; grid-template-columns: 78px minmax(0,1fr); gap: 6px; margin-top: 6px; }

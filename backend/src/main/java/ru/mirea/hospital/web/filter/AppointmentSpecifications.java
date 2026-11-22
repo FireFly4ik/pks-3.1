@@ -21,13 +21,43 @@ public final class AppointmentSpecifications {
 
 
             if (filter.archived() != null) predicates.add(cb.equal(root.get("archived"), filter.archived()));
-            if (filter.status() != null) predicates.add(cb.equal(root.get("status"), filter.status()));
+            var now = ru.mirea.hospital.web.service.AppointmentStatusPolicy.now();
+            var stored = root.<ru.mirea.hospital.web.domain.AppointmentStatus>get("status");
+            var starts = root.<java.time.LocalDateTime>get("startsAt");
+            var cancelled = ru.mirea.hospital.web.domain.AppointmentStatus.CANCELLED;
+            var completed = ru.mirea.hospital.web.domain.AppointmentStatus.COMPLETED;
+            var active = cb.and(cb.notEqual(stored, cancelled), cb.notEqual(stored, completed));
+            var finished = cb.or(cb.equal(stored, completed), cb.and(active, cb.lessThanOrEqualTo(starts, now.minusMinutes(30))));
+            var terminal = cb.or(cb.equal(stored, cancelled), finished);
+            if (filter.status() != null) predicates.add(switch (filter.status()) {
+                case CANCELLED -> cb.equal(stored, cancelled);
+                case COMPLETED -> finished;
+                case UPCOMING -> cb.and(active, cb.or(cb.greaterThan(starts, now), cb.and(cb.isNull(starts), cb.equal(stored, filter.status()))));
+                case IN_PROGRESS -> cb.and(active, cb.or(cb.and(cb.lessThanOrEqualTo(starts, now), cb.greaterThan(starts, now.minusMinutes(30))), cb.and(cb.isNull(starts), cb.equal(stored, filter.status()))));
+            });
             if (filter.callback() != null) predicates.add(cb.equal(root.get("needsCall"), filter.callback()));
-            if (filter.priority() != null) predicates.add(cb.equal(root.get("priorityLevel"), filter.priority()));
+            if (filter.priority() != null) {
+                var readiness = root.<java.math.BigDecimal>get("readiness");
+                var call = cb.isTrue(root.<Boolean>get("needsCall"));
+                var lowScore = cb.lessThan(readiness, new java.math.BigDecimal("60"));
+                var unknown = cb.isNull(readiness);
+                var below75 = cb.lessThan(readiness, new java.math.BigDecimal("75"));
+                var critical = cb.and(call, cb.or(unknown, lowScore));
+                var high = cb.or(cb.and(call, cb.greaterThanOrEqualTo(readiness, new java.math.BigDecimal("60"))), cb.and(cb.not(call), lowScore));
+                var medium = cb.and(cb.not(call), cb.or(unknown, cb.and(cb.greaterThanOrEqualTo(readiness, new java.math.BigDecimal("60")), below75)));
+                var low = cb.and(cb.not(call), cb.greaterThanOrEqualTo(readiness, new java.math.BigDecimal("75")));
+                predicates.add(switch (filter.priority()) {
+                    case NOT_APPLICABLE -> terminal;
+                    case CRITICAL -> cb.and(cb.notEqual(stored, cancelled), active, cb.or(cb.isNull(starts), cb.greaterThan(starts, now.minusMinutes(30))), critical);
+                    case HIGH -> cb.and(active, cb.or(cb.isNull(starts), cb.greaterThan(starts, now.minusMinutes(30))), high);
+                    case MEDIUM -> cb.and(active, cb.or(cb.isNull(starts), cb.greaterThan(starts, now.minusMinutes(30))), medium);
+                    case LOW -> cb.and(active, cb.or(cb.isNull(starts), cb.greaterThan(starts, now.minusMinutes(30))), low);
+                });
+            }
 
             Join<Appointment, Doctor> doctorJoin = root.join("doctor", JoinType.LEFT);
             if (filter.doctor() != null) {
-                predicates.add(cb.like(cb.lower(doctorJoin.get("code")), "%" + escape(filter.doctor()) + "%", '\\'));
+                predicates.add(cb.equal(cb.lower(doctorJoin.get("code")), filter.doctor().toLowerCase(Locale.ROOT)));
             }
             if (filter.tag() != null) {
                 Join<Appointment, String> tagJoin = root.joinSet("tags", JoinType.LEFT);
